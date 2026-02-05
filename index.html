@@ -2,35 +2,50 @@
 <html lang="eu">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Euskara Arcade Pro</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- PANTALLA DE CONFIGURACIÓN -->
     <div id="setup-screen" class="screen">
         <h1 class="glow">Euskara Arcade</h1>
+        
         <div class="setup-container">
+            <!-- CABECERA FIJA: Idioma y Selección -->
             <div class="setup-fixed-top">
                 <div class="mode-tabs">
                     <button id="btn-eu-es" class="tab-btn active" onclick="setMode('eu-es')">Euskara ➔ ES</button>
                     <button id="btn-es-eu" class="tab-btn" onclick="setMode('es-eu')">ES ➔ Euskara</button>
                 </div>
+                
                 <div class="bulk-actions">
-                    <button onclick="setAllCats(true)" class="bulk-btn select-all">✓ Hautatu dena</button>
-                    <button onclick="setAllCats(false)" class="bulk-btn deselect-all">✕ Garbitu</button>
+                    <button onclick="setAllCats(true)" class="bulk-btn select-all">
+                        <span class="icon">✓</span> Hautatu dena
+                    </button>
+                    <button onclick="setAllCats(false)" class="bulk-btn deselect-all">
+                        <span class="icon">✕</span> Garbitu
+                    </button>
                 </div>
             </div>
-            <div id="setup-categories" class="scroll-area"></div>
+
+            <!-- LISTADO DE CATEGORÍAS (SCROLL) -->
+            <div id="setup-categories" class="scroll-area">
+                <!-- Inyectado por JS -->
+            </div>
+
+            <!-- PIE FIJO: HASI y Gestión -->
             <div class="setup-fixed-bottom">
                 <button onclick="startArcadeGame()" class="start-btn">HASI</button>
                 <div class="management-btns">
-                    <button onclick="showHistory()">📊 Estatistikak</button>
+                    <button onclick="showHistory()" title="Estatistikak">📊 Estatistikak</button>
                     <button onclick="resetStorage()" class="btn-danger">🗑️ Ezabatu</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- HUD (Línea superior de juego) -->
     <div id="hud" class="hidden">
         <div class="hud-line">
             <div class="stat-group" id="lives-container"></div>
@@ -45,16 +60,20 @@
         </div>
     </div>
 
+    <!-- PANEL DE JUEGO -->
     <div id="game-card" class="screen hidden">
         <div id="target-word"></div>
+        
         <div class="options-container">
             <div id="options-grid" class="options-grid"></div>
+            <!-- Comodín circular integrado -->
             <button id="joker-btn" onclick="useJoker()" class="joker-circle-btn hidden">
                 🃏 <span id="joker-btn-count">0</span>
             </button>
         </div>
     </div>
 
+    <!-- MODAL DE CORRECCIÓN -->
     <div id="fail-modal" class="overlay hidden">
         <div class="modal-box">
             <div id="correction-text"></div>
@@ -62,6 +81,7 @@
         </div>
     </div>
 
+    <!-- MODAL DE RULETA -->
     <div id="roulette-modal" class="overlay hidden">
         <div class="modal-box">
             <h2 class="ruleta-title">Zorte on!</h2>
@@ -73,6 +93,7 @@
         </div>
     </div>
 
+    <!-- MODAL DE FIN DE JUEGO (AMAIERA) -->
     <div id="game-over-modal" class="overlay hidden">
         <div class="modal-box game-over-box">
             <h1 class="gameOver-title">AMAIERA</h1>
