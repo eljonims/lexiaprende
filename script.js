@@ -3,7 +3,7 @@ let currentWord = {}, currentOptionsCount = 2, timerInt;
 let isSpinning = false, crazySpeed = false, currentMode = 'eu-es';
 let audioCtx = null, soundEnabled = true;
 
-const premios = ["❤️ Vida +1", "❄️ Congelar", "🔄 voltear idioma", "⚡ flash", "🎭💀 Comodín -1", "🔥 tiempo -2s", "🚫 Respuestas +1"/*, "🎭 Komodina Kendu"*/];
+const premios = ["❤️ Vida +1", "❄️ Congelar", "🔄 voltear idioma", "⚡ flash", "🎭💀 Comodín -1", "🔥 tiempo -2s", "🚫 Respuestas +1", "🎭 Komodina Kendu"];
 
 window.onload = () => {
     // Cargar categorías del diccionario
