@@ -39,7 +39,7 @@ function playSound(type) {
     } else if (type === 'tick') {
         osc.type = 'square';
         osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.005, audioCtx.currentTime);
     }
     osc.start(); osc.stop(audioCtx.currentTime + (type === 'tick' ? 0.05 : 0.2));
 }
