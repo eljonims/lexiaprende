@@ -366,7 +366,7 @@ const diccionario = [
 // CATEGORÍA 3: SUKALDEA (CARNES, PESCADOS Y LEGUMBRES)
 { euskera: "Okela", es: "Carne (en general)", cat: "Sukaldea-2" },
 { euskera: "Behiki", es: "Carne de vaca", cat: "Sukaldea-2" },
-{ euskera: "Zahal", es: "Ternera", cat: "Sukaldea-2" },
+{ euskera: "Txahal", es: "Ternera", cat: "Sukaldea-2" },
 { euskera: "Txerriki", es: "Carne de cerdo sink", cat: "Sukaldea-2" },
 { euskera: "Aratxe", es: "Ternero/Novillo", cat: "Sukaldea-2" },
 { euskera: "Bildots", es: "Cordero", cat: "Sukaldea-2" },
