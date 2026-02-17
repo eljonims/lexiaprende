@@ -31,7 +31,7 @@ class LexiAprende {
                 this.db = null;       // Conexión a IndexedDB (para récords)
         }
         // El mensajero de la bitácora
-        bitacora(msj, pct) {
+        bitacora(msj, pct) {//mensaje y porcentaje (0-100) de la barra
                 const lista = document.getElementById('bitacora-lanzamiento');
                 const barra = document.getElementById('barra-progreso');
                 if (lista) {
@@ -45,7 +45,7 @@ class LexiAprende {
         }
 
         esperar(ms) { return new Promise(res => setTimeout(res, ms)); }
-       
+
         //Busca la clave en el JSON; si no existe, usa el Español.
         t(clave) {
                 // Si hay datos, buscamos en su sección 'textos'. Si no, al núcleo.
@@ -79,4 +79,47 @@ class LexiAprende {
                         this.bitacora(this.t('msg-error'), 100);
                 }
         }
+        /**
+  * 🗄️ Inicializa el Almacén con soporte para analítica de aprendizaje
+  */
+        conectarAlmacen() {
+                return new Promise((resolver, rechazar) => {
+                        // Abrimos la base de datos (Versión 1)
+                        const peticion = indexedDB.open("LexiAprende_DB", 1);
+
+                        // Solo ocurre la primera vez: Definimos el diseño de los compartimentos
+                        peticion.onupgradeneeded = (e) => {
+                                const db = e.target.result;
+
+                                // 🥇 Estantería 1: RÉCORDS de Categorías
+                                // Guarda: { id: "eu-familia", puntosMax: 500, rachaMax: 8, medallas: 1 }
+                                if (!db.objectStoreNames.contains("records")) {
+                                        db.createObjectStore("records", { keyPath: "id" });
+                                }
+
+                                // 🧠 Estantería 2: LÉXICO (El "Expediente" de cada palabra)
+                                // Usamos el ID de la palabra como llave (ej: "ama")
+                                // Aquí guardaremos los aciertos_A_B, aciertos_B_A y tiempos.
+                                if (!db.objectStoreNames.contains("lexico")) {
+                                        db.createObjectStore("lexico", { keyPath: "id" });
+                                }
+
+                                // ⚙️ Estantería 3: AJUSTES (Preferencias y Estado)
+                                // Guarda cosas como: { id: "volumen", valor: 80 }
+                                if (!db.objectStoreNames.contains("ajustes")) {
+                                        db.createObjectStore("ajustes", { keyPath: "id" });
+                                }
+
+                                console.log("🏗️ Diseño de Almacén Triple completado.");
+                        };
+
+                        peticion.onsuccess = (e) => {
+                                this.db = e.target.result;
+                                resolver();
+                        };
+
+                        peticion.onerror = () => rechazar("Error crítico: Almacén inaccesible.");
+                });
+        }
+
 }
