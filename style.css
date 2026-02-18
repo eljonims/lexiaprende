@@ -123,7 +123,7 @@ body {
         flex-direction: column;
         gap: 12px;
         width: 100%;
-        padding: 20px;
+        padding: 15px;
         max-height: 70vh;
         /* Zona desplazable */
         overflow-y: auto;
@@ -195,6 +195,9 @@ body {
 /* --- CABECERA DE ACCIONES (FIJA ARRIBA) --- */
 
 .barra-herramientas-seleccion {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -203,12 +206,11 @@ body {
         border-bottom: 1px solid #222;
         position: sticky;
         /* Se queda pegada arriba al hacer scroll */
-        top: 0;
-        z-index: 100;
+
         width: 100%;
         flex-wrap: wrap;
         /* 📱 Vital para móviles: si no caben, saltan de línea */
-        gap: 10px;
+        gap: 8px;
 }
 
 .boton-accion-masiva-categorias {
@@ -271,4 +273,17 @@ body {
         border-color: #ff4400;
         color: #ff4400;
         box-shadow: 0 0 10px #ff440033;
+}
+.boton-disparador-juego-neon {
+    background: #00ffcc;
+    color: #000;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 0 10px #00ffcc;
+    white-space: nowrap;
 }

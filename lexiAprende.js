@@ -109,7 +109,7 @@ class LexiAprende {
                 }
         }
 
-       
+
         conectarAlmacen() {
                 return new Promise((resolver, rechazar) => {
                         // Abrimos la base de datos (Versión 1)
@@ -161,8 +161,8 @@ class LexiAprende {
                 // 2. Definimos la cabecera (Tu código actual con t() y data-accion)
                 const htmlCabecera = `
             <div class="barra-herramientas-seleccion">
-                <button class="boton-accion-masiva-categorias" data-accion="alternar-todos-temas" id="btn-masivo">
-                    ${this.t('btn-categorias-ninguna')}
+                <button class="boton-disparador-juego-neon" data-accion="lanzar-juego">
+                    ${this.t('inicio')}
                 </button>
                 <div class="grupo-selector-dificultad">
                     <button class="btn-dificultad" data-accion="cambiar-dificultad" data-id="nvl-1">
@@ -178,6 +178,9 @@ class LexiAprende {
                         <span class="texto-pista-nivel">${this.t('nvl-3-pista')}</span>
                     </button>
                 </div>
+                <button class="boton-accion-masiva-categorias" data-accion="alternar-todos-temas" id="btn-masivo">
+                    ${this.t('btn-categorias-ninguna')}
+                </button>
             </div>`;
 
                 // 3. Generamos las filas de temas
@@ -191,7 +194,7 @@ class LexiAprende {
                     <span class="texto-nombre-categoria">${tema.titulo}</span>
                     <span class="icono-maestria-evolutiva">🌱</span>
                 </div>`;
-                this.listaCategoriasSeleccionadas.push(tema.id);
+                        this.listaCategoriasSeleccionadas.push(tema.id);
                 });
 
                 // 4. Inyectamos: Cabecera ANTES del listado, Filas DENTRO del listado
@@ -231,7 +234,7 @@ class LexiAprende {
                         }
                 });
         }
-       
+
         resaltaBotonDificultadSeleccionada() {
                 // 1. Buscamos todos los botones de dificultad
                 const botones = document.querySelectorAll('.btn-dificultad');
@@ -245,7 +248,7 @@ class LexiAprende {
                 });
         }
 
-        
+
         gestionarDificultad(elemento, idNivel) {
                 this.nivelDificultadSeleccionado = idNivel; // Guardamos nvl-1, nvl-2 o nvl-3
                 this.resaltaBotonDificultadSeleccionada();
@@ -253,7 +256,7 @@ class LexiAprende {
 
                 // Opcional: Podríamos guardar esto en IndexedDB aquí mismo
         }
-       
+
         gestionarSeleccionFila(elemento, id) {
                 // 1. Efecto visual (Neón)
                 elemento.classList.toggle('estado-seleccionado');
@@ -285,7 +288,7 @@ class LexiAprende {
                 // Si falta alguno, el botón invita a "Poner Todo" (todas)
                 btnMasivo.innerText = todosSeleccionados ? this.t('btn-categorias-ninguna') : this.t('btn-categorias-todas');
         }
-       
+
         ejecutarSeleccionMasiva() {
                 const botonesTemas = document.querySelectorAll('.boton-fila-seleccion-tema');
                 const btnMasivo = document.getElementById('btn-masivo');
