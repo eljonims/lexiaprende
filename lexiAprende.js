@@ -25,7 +25,7 @@ class LexiAprende {
                         "nvl-3-pista": "EXPERTO"
                 };
 
-                this.listaCategoriasSeleccionadas=[];
+                this.listaCategoriasSeleccionadas = [];
                 // 📊 ESTADO INICIAL DEL JUEGO
                 this.nivelSeleccionado = "nvl-1"; // Empezamos en modo Semilla 🌱
                 this.vidas = 3;
@@ -281,7 +281,7 @@ class LexiAprende {
                 console.log("Categorías activas:", this.listaCategoriasSeleccionadas);
                 this.sincronizarBotonMasivo();
         }
-      
+
         sincronizarBotonMasivo() {
                 const botonesTemas = document.querySelectorAll('.boton-fila-seleccion-tema');
                 const btnMasivo = document.getElementById('btn-masivo');
@@ -294,6 +294,39 @@ class LexiAprende {
                 // Si falta alguno, el botón invita a "Poner Todo" (todas)
                 btnMasivo.innerText = todosSeleccionados ? this.t('btn-categorias-ninguna') : this.t('btn-categorias-todas');
         }
+        /**
+ * 🔄 Selecciona o deselecciona todos los temas del catálogo a la vez
+ */
+        ejecutarSeleccionMasiva() {
+                const botonesTemas = document.querySelectorAll('.boton-fila-seleccion-tema');
+                const btnMasivo = document.getElementById('btn-masivo');
+                if (!btnMasivo) return;
+
+                // Comprobamos si actualmente están todos marcados
+                const todosSeleccionados = Array.from(botonesTemas).every(b => b.classList.contains('estado-seleccionado'));
+
+                botonesTemas.forEach(boton => {
+                        const idTema = boton.dataset.id;
+
+                        if (todosSeleccionados) {
+                                // DESACTIVAR TODO
+                                boton.classList.remove('estado-seleccionado');
+                                this.listaCategoriasSeleccionadas = [];
+                        } else {
+                                // ACTIVAR TODO
+                                boton.classList.add('estado-seleccionado');
+                                if (!this.listaCategoriasSeleccionadas.includes(idTema)) {
+                                        this.listaCategoriasSeleccionadas.push(idTema);
+                                }
+                        }
+                });
+
+                // Actualizamos el texto del botón usando el traductor
+                btnMasivo.innerText = todosSeleccionados ? this.t('btn-categorias-todas') : this.t('btn-categorias-ninguna');
+
+                console.log("Selección masiva:", this.listaCategoriasSeleccionadas);
+        }
+
 
 
 
