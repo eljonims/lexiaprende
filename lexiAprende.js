@@ -99,6 +99,7 @@ class LexiAprende {
 
                                         // Ahora que el escenario existe, dibujamos los botones
                                         this.mostrarMenu(temas);
+                                        this.conectarEventos();
                                 }, 600);
                         }
 
