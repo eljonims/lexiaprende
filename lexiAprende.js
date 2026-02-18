@@ -26,6 +26,7 @@ class LexiAprende {
                 };
 
                 // 📊 ESTADO INICIAL DEL JUEGO
+                this.nivelSeleccionado = "nvl-1"; // Empezamos en modo Semilla 🌱
                 this.vidas = 3;
                 this.comodines = 3;
                 this.puntos = 0;
@@ -84,6 +85,22 @@ class LexiAprende {
                         // 4. Todo preparado para el Menú
                         this.bitacora(this.t('msg-sistema-listo'), 100);
                         await this.esperar(800);
+
+                        // 🎬 TRANSICIÓN VISUAL
+                        const capaCarga = document.getElementById('pantalla-lanzamiento');
+                        const escenarioPrincipal = document.getElementById('app');
+
+                        if (capaCarga && escenarioPrincipal) {
+                                capaCarga.style.opacity = "0"; // Desvanecimiento neón
+
+                                setTimeout(() => {
+                                        capaCarga.classList.add('oculto'); // La quitamos del medio
+                                        escenarioPrincipal.classList.remove('oculto'); // Mostramos el menú
+
+                                        // Ahora que el escenario existe, dibujamos los botones
+                                        this.mostrarMenu(temas);
+                                }, 600);
+                        }
 
                         this.mostrarMenu(temas);
 
@@ -222,6 +239,33 @@ class LexiAprende {
                         }
                 });
         }
+        /**
+ * 🎨 Ilumina el botón de dificultad activo según el estado del motor
+ */
+        actualizarVisualDificultad() {
+                // 1. Buscamos todos los botones de dificultad
+                const botones = document.querySelectorAll('.boton-nivel-dificultad');
+
+                // 2. Limpiamos el brillo de todos y encendemos solo el seleccionado
+                botones.forEach(btn => {
+                        btn.classList.remove('estado-activo');
+                        if (btn.dataset.id === this.nivelSeleccionado) {
+                                btn.classList.add('estado-activo');
+                        }
+                });
+        }
+
+        /**
+         * ⚙️ Cambia el nivel de dificultad y actualiza la interfaz
+         */
+        gestionarDificultad(elemento, idNivel) {
+                this.nivelSeleccionado = idNivel; // Guardamos nvl-1, nvl-2 o nvl-3
+                this.actualizarVisualDificultad();
+                console.log(`[Dificultad] Cambiada a: ${idNivel}`);
+
+                // Opcional: Podríamos guardar esto en IndexedDB aquí mismo
+        }
+
 
 
 
