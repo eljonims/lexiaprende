@@ -61,10 +61,6 @@ class LexiAprende {
                 return this.datos?.config?.textos?.[clave] || this.nucleoIU[clave] || `{${clave}}`;
         }
 
-        /**
- * 🚀 Arranca el motor y coordina los sistemas iniciales
- * Usa el traductor t() para que los mensajes sean universales.
- */
         async lanzar(urlCatalogo) {
                 // 1. Iniciamos la bitácora con el nombre del motor
                 this.bitacora(`${this.t('titulo')} ${this.t('msg-inicio')}`, 10);
@@ -113,9 +109,7 @@ class LexiAprende {
                 }
         }
 
-        /**
-  * 🗄️ Inicializa el Almacén con soporte para analítica de aprendizaje
-  */
+       
         conectarAlmacen() {
                 return new Promise((resolver, rechazar) => {
                         // Abrimos la base de datos (Versión 1)
@@ -188,6 +182,7 @@ class LexiAprende {
 
                 // 3. Generamos las filas de temas
                 let htmlFilas = "";
+                this.listaCategoriasSeleccionadas = [];
                 catalogoTemas.forEach(tema => {
                         htmlFilas += `
                 <div class="boton-fila-seleccion-tema estado-seleccionado" 
@@ -196,6 +191,7 @@ class LexiAprende {
                     <span class="texto-nombre-categoria">${tema.titulo}</span>
                     <span class="icono-maestria-evolutiva">🌱</span>
                 </div>`;
+                this.listaCategoriasSeleccionadas.push(tema.id);
                 });
 
                 // 4. Inyectamos: Cabecera ANTES del listado, Filas DENTRO del listado
@@ -234,9 +230,7 @@ class LexiAprende {
                         }
                 });
         }
-        /**
- * 🎨 Ilumina el botón de dificultad activo según el estado del motor
- */
+       
         actualizarVisualDificultad() {
                 // 1. Buscamos todos los botones de dificultad
                 const botones = document.querySelectorAll('.boton-nivel-dificultad');
@@ -250,9 +244,7 @@ class LexiAprende {
                 });
         }
 
-        /**
-         *  Cambia el nivel de dificultad y actualiza la interfaz
-         */
+        
         gestionarDificultad(elemento, idNivel) {
                 this.nivelSeleccionado = idNivel; // Guardamos nvl-1, nvl-2 o nvl-3
                 this.actualizarVisualDificultad();
@@ -260,9 +252,7 @@ class LexiAprende {
 
                 // Opcional: Podríamos guardar esto en IndexedDB aquí mismo
         }
-        /**
-         * Gestiona la selección individual de cada tema y actualiza la lista de juego
-         */
+       
         gestionarSeleccionFila(elemento, id) {
                 // 1. Efecto visual (Neón)
                 elemento.classList.toggle('estado-seleccionado');
@@ -294,9 +284,7 @@ class LexiAprende {
                 // Si falta alguno, el botón invita a "Poner Todo" (todas)
                 btnMasivo.innerText = todosSeleccionados ? this.t('btn-categorias-ninguna') : this.t('btn-categorias-todas');
         }
-        /**
- * 🔄 Selecciona o deselecciona todos los temas del catálogo a la vez
- */
+       
         ejecutarSeleccionMasiva() {
                 const botonesTemas = document.querySelectorAll('.boton-fila-seleccion-tema');
                 const btnMasivo = document.getElementById('btn-masivo');
