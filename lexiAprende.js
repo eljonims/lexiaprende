@@ -25,6 +25,7 @@ class LexiAprende {
                         "nvl-3-pista": "EXPERTO"
                 };
 
+                this.listaCategoriasSeleccionadas=[];
                 // 📊 ESTADO INICIAL DEL JUEGO
                 this.nivelSeleccionado = "nvl-1"; // Empezamos en modo Semilla 🌱
                 this.vidas = 3;
@@ -278,7 +279,22 @@ class LexiAprende {
                 }
 
                 console.log("Categorías activas:", this.listaCategoriasSeleccionadas);
+                this.sincronizarBotonMasivo();
         }
+      
+        sincronizarBotonMasivo() {
+                const botonesTemas = document.querySelectorAll('.boton-fila-seleccion-tema');
+                const btnMasivo = document.getElementById('btn-masivo');
+                if (!btnMasivo || botonesTemas.length === 0) return;
+
+                // Comprobamos si TODOS están encendidos
+                const todosSeleccionados = Array.from(botonesTemas).every(b => b.classList.contains('estado-seleccionado'));
+
+                // Si están todos, el botón invita a "Quitar Todo" (ninguna)
+                // Si falta alguno, el botón invita a "Poner Todo" (todas)
+                btnMasivo.innerText = todosSeleccionados ? this.t('btn-categorias-ninguna') : this.t('btn-categorias-todas');
+        }
+
 
 
 
