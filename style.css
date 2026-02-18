@@ -1,6 +1,13 @@
+* {
+        box-sizing: border-box;
+}
+
 /* --- ESTÉTICA BASE --- */
 body {
         margin: 0;
+        padding: 0;
+        width: 100vw;
+        overflow-x: hidden;
         background: #121212;
         color: #eee;
         font-family: 'Segoe UI', Tahoma, sans-serif;
@@ -88,6 +95,11 @@ body {
 
 /* --- ESCENARIO DEL JUEGO --- */
 #app {
+        width: 100%;
+        max-width: 100%;
+        /* Evita que crezca más que la pantalla */
+        padding: 10px;
+        margin: 0 auto;
         padding: 20px;
         text-align: center;
         height: 100vh;
@@ -110,6 +122,7 @@ body {
         display: flex;
         flex-direction: column;
         gap: 12px;
+        width: 100%;
         padding: 20px;
         max-height: 70vh;
         /* Zona desplazable */
@@ -122,6 +135,9 @@ body {
         align-items: center;
         justify-content: space-between;
         width: 100%;
+        /* Ocupa todo el ancho disponible */
+        max-width: 100%;
+        min-height: 70px;
         min-height: 75px;
         padding: 0 25px;
         background: #1a1a1a;
@@ -182,13 +198,17 @@ body {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 15px 20px;
+        padding: 10px;
         background: #000;
         border-bottom: 1px solid #222;
         position: sticky;
         /* Se queda pegada arriba al hacer scroll */
         top: 0;
         z-index: 100;
+        width: 100%;
+        flex-wrap: wrap;
+        /* 📱 Vital para móviles: si no caben, saltan de línea */
+        gap: 10px;
 }
 
 .boton-accion-masiva-categorias {

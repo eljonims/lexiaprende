@@ -156,58 +156,51 @@ class LexiAprende {
 
         mostrarMenu(catalogoTemas) {
                 const zonaListado = document.getElementById('tablero-juego');
+
+                // 1. LIMPIEZA RADICAL: Borramos el listado y buscamos la cabecera vieja
                 zonaListado.innerHTML = "";
-                zonaListado.className = "contenedor-listado-categorias";
+                const cabeceraVieja = document.querySelector('.barra-herramientas-seleccion');
+                if (cabeceraVieja) cabeceraVieja.remove(); // Si existe, la fulminamos antes de crear la nueva
 
-                // 1. Preparamos el HTML del Selector de Dificultad (con tus claves de traducción)
-                const htmlDificultad = `
-        <div class="grupo-selector-dificultad">
-            <button class="boton-nivel-dificultad" data-accion="cambiar-dificultad" data-id="nvl-1">
-                <span class="icono-nivel">🌱</span>
-                <span class="texto-pista-nivel">${this.t('nvl-1-pista')}</span>
-            </button>
-            <button class="boton-nivel-dificultad" data-accion="cambiar-dificultad" data-id="nvl-2">
-                <span class="icono-nivel">🌿</span>
-                <span class="texto-pista-nivel">${this.t('nvl-2-pista')}</span>
-            </button>
-            <button class="boton-nivel-dificultad" data-accion="cambiar-dificultad" data-id="nvl-3">
-                <span class="icono-nivel">🌳</span>
-                <span class="texto-pista-nivel">${this.t('nvl-3-pista')}</span>
-            </button>
-        </div>
-    `;
+                // 2. Definimos la cabecera (Tu código actual con t() y data-accion)
+                const htmlCabecera = `
+            <div class="barra-herramientas-seleccion">
+                <button class="boton-accion-masiva-categorias" data-accion="alternar-todos-temas" id="btn-masivo">
+                    ${this.t('btn-categorias-ninguna')}
+                </button>
+                <div class="grupo-selector-dificultad">
+                    <button class="boton-nivel-dificultad" data-accion="cambiar-dificultad" data-id="nvl-1">
+                        <span class="icono-nivel">🌱</span>
+                        <span class="texto-pista-nivel">${this.t('nvl-1-pista')}</span>
+                    </button>
+                    <button class="boton-nivel-dificultad" data-accion="cambiar-dificultad" data-id="nvl-2">
+                        <span class="icono-nivel">🌿</span>
+                        <span class="texto-pista-nivel">${this.t('nvl-2-pista')}</span>
+                    </button>
+                    <button class="boton-nivel-dificultad" data-accion="cambiar-dificultad" data-id="nvl-3">
+                        <span class="icono-nivel">🌳</span>
+                        <span class="texto-pista-nivel">${this.t('nvl-3-pista')}</span>
+                    </button>
+                </div>
+            </div>`;
 
-                // 2. Construimos la Barra de Herramientas completa
-                const cabecera = `
-        <div class="barra-herramientas-seleccion">
-            <button class="boton-accion-masiva-categorias" 
-                    data-accion="alternar-todos-temas" 
-                    id="btn-masivo">
-                ${this.t('btn-categorias-ninguna')}
-            </button>
-            
-            ${htmlDificultad} 
-        </div>
-    `;
-
-                // 3. Inyectamos la cabecera y preparamos las filas de temas
+                // 3. Generamos las filas de temas
                 let htmlFilas = "";
                 catalogoTemas.forEach(tema => {
                         htmlFilas += `
-                        <div class="boton-fila-seleccion-tema estado-seleccionado" 
-                                data-accion="seleccionar-tema" 
-                                data-id="${tema.id}">
-                                <span class="texto-nombre-categoria">${tema.titulo}</span>
-                                <span class="icono-maestria-evolutiva">🌱</span>
-                        </div>
-                        `;
+                <div class="boton-fila-seleccion-tema estado-seleccionado" 
+                     data-accion="seleccionar-tema" 
+                     data-id="${tema.id}">
+                    <span class="texto-nombre-categoria">${tema.titulo}</span>
+                    <span class="icono-maestria-evolutiva">🌱</span>
+                </div>`;
                 });
 
-                // Colocamos todo en el DOM
-                zonaListado.parentElement.insertAdjacentHTML('afterbegin', cabecera);
+                // 4. Inyectamos: Cabecera ANTES del listado, Filas DENTRO del listado
+                zonaListado.insertAdjacentHTML('beforebegin', htmlCabecera);
                 zonaListado.innerHTML = htmlFilas;
 
-                // 4. Activamos por defecto el nivel que el motor tenga (ej: nvl-1)
+                // 5. Encendemos el neón del nivel inicial
                 this.actualizarVisualDificultad();
         }
 
