@@ -259,6 +259,12 @@ class LexiAprende {
 
                 // Opcional: Podríamos guardar esto en IndexedDB aquí mismo
         }
+        gestionarSeleccionFila(elemento, id) {
+                elemento.classList.toggle('estado-seleccionado');
+                // Nota: Aquí el motor solo cambia el color. En el siguiente paso guardaremos el ID.
+                console.log("Tema tocado:", id);
+        }
+
 
 
 
