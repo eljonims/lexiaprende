@@ -27,7 +27,7 @@ class LexiAprende {
 
                 this.listaCategoriasSeleccionadas = [];
                 // 📊 ESTADO INICIAL DEL JUEGO
-                this.nivelSeleccionado = "nvl-1"; // Empezamos en modo Semilla 🌱
+                this.nivelDificultadSeleccionado = "nvl-1"; // Empezamos en modo Semilla 🌱
                 this.vidas = 3;
                 this.comodines = 3;
                 this.puntos = 0;
@@ -165,15 +165,15 @@ class LexiAprende {
                     ${this.t('btn-categorias-ninguna')}
                 </button>
                 <div class="grupo-selector-dificultad">
-                    <button class="boton-nivel-dificultad" data-accion="cambiar-dificultad" data-id="nvl-1">
+                    <button class="btn-dificultad" data-accion="cambiar-dificultad" data-id="nvl-1">
                         <span class="icono-nivel">🌱</span>
                         <span class="texto-pista-nivel">${this.t('nvl-1-pista')}</span>
                     </button>
-                    <button class="boton-nivel-dificultad" data-accion="cambiar-dificultad" data-id="nvl-2">
+                    <button class="btn-dificultad" data-accion="cambiar-dificultad" data-id="nvl-2">
                         <span class="icono-nivel">🌿</span>
                         <span class="texto-pista-nivel">${this.t('nvl-2-pista')}</span>
                     </button>
-                    <button class="boton-nivel-dificultad" data-accion="cambiar-dificultad" data-id="nvl-3">
+                    <button class="btn-dificultad" data-accion="cambiar-dificultad" data-id="nvl-3">
                         <span class="icono-nivel">🌳</span>
                         <span class="texto-pista-nivel">${this.t('nvl-3-pista')}</span>
                     </button>
@@ -199,7 +199,8 @@ class LexiAprende {
                 zonaListado.innerHTML = htmlFilas;
 
                 // 5. Encendemos el neón del nivel inicial
-                this.actualizarVisualDificultad();
+                this.resaltaBotonDificultadSeleccionada();
+
         }
 
 
@@ -231,23 +232,23 @@ class LexiAprende {
                 });
         }
        
-        actualizarVisualDificultad() {
+        resaltaBotonDificultadSeleccionada() {
                 // 1. Buscamos todos los botones de dificultad
-                const botones = document.querySelectorAll('.boton-nivel-dificultad');
+                const botones = document.querySelectorAll('.btn-dificultad');
 
                 // 2. Limpiamos el brillo de todos y encendemos solo el seleccionado
                 botones.forEach(btn => {
-                        btn.classList.remove('estado-activo');
-                        if (btn.dataset.id === this.nivelSeleccionado) {
-                                btn.classList.add('estado-activo');
+                        btn.classList.remove('es-dificultad-seleccionada');
+                        if (btn.dataset.id === this.nivelDificultadSeleccionado) {
+                                btn.classList.add('es-dificultad-seleccionada');
                         }
                 });
         }
 
         
         gestionarDificultad(elemento, idNivel) {
-                this.nivelSeleccionado = idNivel; // Guardamos nvl-1, nvl-2 o nvl-3
-                this.actualizarVisualDificultad();
+                this.nivelDificultadSeleccionado = idNivel; // Guardamos nvl-1, nvl-2 o nvl-3
+                this.resaltaBotonDificultadSeleccionada();
                 console.log(`[Dificultad] Cambiada a: ${idNivel}`);
 
                 // Opcional: Podríamos guardar esto en IndexedDB aquí mismo

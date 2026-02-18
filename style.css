@@ -255,19 +255,19 @@ body {
 }
 
 /* Estado Activo: El neón se enciende según el nivel */
-.btn-dificultad.activo[data-id="nvl-1"] {
+.btn-dificultad.es-dificultad-seleccionada[data-id="nvl-1"] {
         border-color: #00ffcc;
         color: #00ffcc;
         box-shadow: 0 0 10px #00ffcc33;
 }
 
-.btn-dificultad.activo[data-id="nvl-2"] {
+.btn-dificultad.es-dificultad-seleccionada[data-id="nvl-2"] {
         border-color: #ffaa00;
         color: #ffaa00;
         box-shadow: 0 0 10px #ffaa0033;
 }
 
-.btn-dificultad.activo[data-id="nvl-3"] {
+.btn-dificultad.es-dificultad-seleccionada[data-id="nvl-3"] {
         border-color: #ff4400;
         color: #ff4400;
         box-shadow: 0 0 10px #ff440033;
