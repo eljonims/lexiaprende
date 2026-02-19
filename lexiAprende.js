@@ -398,6 +398,33 @@ class LexiAprende {
 
                 zonaJuego.innerHTML = htmlEstado + htmlPregunta;
         }
+        
+        siguientePregunta() {
+                // 1. Mapeamos tu nivel a número de rareza 'r'
+                const rarezaMaxima = parseInt(this.nivelDificultadSeleccionado.split('-')[1]);
+
+                // 2. Filtramos la "bolsa" para quedarnos solo con lo que toca
+                const opcionesPosibles = this.datosCargados.filter(item => item.r <= rarezaMaxima);
+
+                if (opcionesPosibles.length === 0) {
+                        console.error("❌ No hay palabras con rareza", rarezaMaxima);
+                        return;
+                }
+
+                // 3. Elegimos la Ganadora (al azar)
+                const indiceAleatorio = Math.floor(Math.random() * opcionesPosibles.length);
+                this.preguntaActual = opcionesPosibles[indiceAleatorio];
+
+                // 4. Pintamos el texto en el H2 que creamos antes
+                // Usamos [0] para la palabra y [1] para la traducción (o viceversa si está invertido)
+                const textoPregunta = this.idiomaInvertido ? this.preguntaActual.p[1] : this.preguntaActual.p[0];
+                document.getElementById('palabra-objetivo').innerText = textoPregunta;
+
+                console.log("🎯 Palabra objetivo:", textoPregunta, "| Rareza:", this.preguntaActual.r);
+
+                // 5.  generar los botones de respuesta
+                this.generarOpcionesRespuesta(opcionesPosibles);
+        }
 
 
 
