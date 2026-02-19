@@ -323,40 +323,82 @@ class LexiAprende {
         }
 
 
-         /**
-     * 🏁 Descarga los JSON de los temas elegidos y los fusiona
-     */
-    async prepararPartida() {
-        if (this.listaCategoriasSeleccionadas.length === 0) {
-            alert(this.t('msg-error-seleccion'));
-            return;
+        /**
+    * 🏁 Descarga los JSON de los temas elegidos y los fusiona
+    */
+        async prepararPartida() {
+                if (this.listaCategoriasSeleccionadas.length === 0) {
+                        alert(this.t('msg-error-seleccion'));
+                        return;
+                }
+
+                try {
+                        const promesas = this.listaCategoriasSeleccionadas.map(id => {
+                                // ⚠️ Fíjate bien en la ruta: 'datos/id.json'
+                                return fetch(`datos/${id}.json`).then(res => {
+                                        if (!res.ok) throw new Error(`No existe el archivo: datos/${id}.json`);
+                                        return res.json();
+                                });
+                        });
+
+                        const todosLosDatos = await Promise.all(promesas);
+
+                        this.datosCargados = [];
+                        todosLosDatos.forEach(json => {
+                                // Unimos el vocabulario (usando el nombre que tú pusiste en el JSON)
+                                this.datosCargados = [...this.datosCargados, ...json.vocabulario];
+                        });
+
+                        console.log(`✅ Fusión completa: ${this.datosCargados.length} palabras.`);
+                        this.iniciarExamen();
+
+                } catch (error) {
+                        console.error("❌ Error al fusionar diccionarios:", error.message);
+                        alert("Falta un archivo de datos. Revisa la consola.");
+                }
         }
 
-        try {
-            const promesas = this.listaCategoriasSeleccionadas.map(id => {
-                // ⚠️ Fíjate bien en la ruta: 'datos/id.json'
-                return fetch(`datos/${id}.json`).then(res => {
-                    if (!res.ok) throw new Error(`No existe el archivo: datos/${id}.json`);
-                    return res.json();
-                });
-            });
+        iniciarExamen() {
+                console.log("El examen comienza. Nivel:", this.nivelDificultadSeleccionado);
 
-            const todosLosDatos = await Promise.all(promesas);
+                // 1. Limpieza total de la interfaz de selección
+                const zonaListado = document.getElementById('tablero-juego');
+                const cabeceraSistemas = document.querySelector('.barra-herramientas-seleccion');
 
-            this.datosCargados = [];
-            todosLosDatos.forEach(json => {
-                // Unimos el vocabulario (usando el nombre que tú pusiste en el JSON)
-                this.datosCargados = [...this.datosCargados, ...json.vocabulario];
-            });
+                if (zonaListado) zonaListado.innerHTML = "";
+                if (cabeceraSistemas) cabeceraSistemas.remove();
 
-            console.log(`✅ Fusión completa: ${this.datosCargados.length} palabras.`);
-            this.iniciarTableroJuego();
+                // 2. Dibujamos el esqueleto del examen (Marcador, Vidas, Pregunta)
+                this.dibujarEscenarioExamen();
 
-        } catch (error) {
-            console.error("❌ Error al fusionar diccionarios:", error.message);
-            alert("Falta un archivo de datos. Revisa la consola.");
+                // 3. Lanzamos la primera pregunta
+                this.siguientePregunta();
         }
-    }
+        dibujarEscenarioExamen() {
+                const zonaJuego = document.getElementById('tablero-juego');
+
+                // 1. Cabecera de Estado (Vidas y Racha)
+                const htmlEstado = `
+            <div class="interfaz-estado-examen">
+                <div id="contenedor-vidas" class="marcador-vidas">❤️❤️❤️</div>
+                <div id="marcador-racha" class="indicador-racha">0 / ${this.objetivoRacha}</div>
+            </div>
+        `;
+
+                // 2. Barra de Tiempo y Palabra Objetivo
+                const htmlPregunta = `
+            <div class="contenedor-pregunta-examen">
+                <div class="barra-tiempo-exterior">
+                    <div id="progreso-tiempo" class="barra-tiempo-interior" style="width: 100%"></div>
+                </div>
+                <h2 id="palabra-objetivo" class="texto-pregunta-principal">---</h2>
+            </div>
+            <div id="opciones-respuesta" class="rejilla-opciones-examen"></div>
+        `;
+
+                zonaJuego.innerHTML = htmlEstado + htmlPregunta;
+        }
+
 
 
 
