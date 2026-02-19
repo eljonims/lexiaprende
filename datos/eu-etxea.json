@@ -1,0 +1,7 @@
+{
+  "config": { "id": "eu-etxea", "titulo": "Etxea" },
+  "vocabulario": [
+    { "p": ["horma", "pared"], "r": 1 },
+    { "p": ["ate", "puerta"], "r": 1 }
+  ]
+}

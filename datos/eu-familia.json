@@ -1,0 +1,7 @@
+{
+  "config": { "id": "eu-familia", "titulo": "Familia" },
+  "vocabulario": [
+    { "p": ["Ama", "Madre"], "r": 1 },
+    { "p": ["Aita", "Padre"], "r": 1 }
+  ]
+}

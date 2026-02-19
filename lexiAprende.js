@@ -322,20 +322,41 @@ class LexiAprende {
                 console.log("Selección masiva:", this.listaCategoriasSeleccionadas);
         }
 
-        /**
-         * 🏁 Recoge los temas elegidos y prepara la fusión de datos
-         */
-        prepararPartida() {
-                if (this.listaCategoriasSeleccionadas.length === 0) {
-                        alert("Selecciona al menos un tema para jugar");
-                        return;
-                }
-                console.log("🚀 Iniciando partida con temas:", this.listaCategoriasSeleccionadas);
-                console.log("📊 Nivel seleccionado:", this.nivelDificultadSeleccionado);
 
-                // El siguiente paso será el fetch de cada JSON
+         /**
+     * 🏁 Descarga los JSON de los temas elegidos y los fusiona
+     */
+    async prepararPartida() {
+        if (this.listaCategoriasSeleccionadas.length === 0) {
+            alert(this.t('msg-error-seleccion'));
+            return;
         }
 
+        try {
+            const promesas = this.listaCategoriasSeleccionadas.map(id => {
+                // ⚠️ Fíjate bien en la ruta: 'datos/id.json'
+                return fetch(`datos/${id}.json`).then(res => {
+                    if (!res.ok) throw new Error(`No existe el archivo: datos/${id}.json`);
+                    return res.json();
+                });
+            });
+
+            const todosLosDatos = await Promise.all(promesas);
+
+            this.datosCargados = [];
+            todosLosDatos.forEach(json => {
+                // Unimos el vocabulario (usando el nombre que tú pusiste en el JSON)
+                this.datosCargados = [...this.datosCargados, ...json.vocabulario];
+            });
+
+            console.log(`✅ Fusión completa: ${this.datosCargados.length} palabras.`);
+            this.iniciarTableroJuego();
+
+        } catch (error) {
+            console.error("❌ Error al fusionar diccionarios:", error.message);
+            alert("Falta un archivo de datos. Revisa la consola.");
+        }
+    }
 
 
 
