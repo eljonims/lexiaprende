@@ -161,7 +161,7 @@ class LexiAprende {
                 // 2. Definimos la cabecera (Tu código actual con t() y data-accion)
                 const htmlCabecera = `
             <div class="barra-herramientas-seleccion">
-                <button class="boton-disparador-juego-neon" data-accion="lanzar-juego">
+                <button class="boton-disparador-juego-neon" data-accion="iniciar-partida">
                     ${this.t('inicio')}
                 </button>
                 <div class="grupo-selector-dificultad">
@@ -219,13 +219,16 @@ class LexiAprende {
 
                         // El Cerebro que decide según la acción
                         switch (accion) {
+                                case 'iniciar-partida':
+                                        this.prepararPartida();
+                                        break;
                                 case 'seleccionar-tema':
                                         this.gestionarSeleccionFila(objetivo, id);
                                         break;
                                 case 'alternar-todos-temas':
                                         this.ejecutarSeleccionMasiva();
                                         break;
-                                case 'lanzar-juego':
+                                case 'iniciar-partida':
                                         this.prepararPartida();
                                         break;
                                 case 'cambiar-dificultad':
@@ -319,6 +322,19 @@ class LexiAprende {
                 console.log("Selección masiva:", this.listaCategoriasSeleccionadas);
         }
 
+        /**
+         * 🏁 Recoge los temas elegidos y prepara la fusión de datos
+         */
+        prepararPartida() {
+                if (this.listaCategoriasSeleccionadas.length === 0) {
+                        alert("Selecciona al menos un tema para jugar");
+                        return;
+                }
+                console.log("🚀 Iniciando partida con temas:", this.listaCategoriasSeleccionadas);
+                console.log("📊 Nivel seleccionado:", this.nivelDificultadSeleccionado);
+
+                // El siguiente paso será el fetch de cada JSON
+        }
 
 
 
