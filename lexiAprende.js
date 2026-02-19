@@ -398,7 +398,7 @@ class LexiAprende {
 
                 zonaJuego.innerHTML = htmlEstado + htmlPregunta;
         }
-        
+
         siguientePregunta() {
                 // 1. Mapeamos tu nivel a número de rareza 'r'
                 const rarezaMaxima = parseInt(this.nivelDificultadSeleccionado.split('-')[1]);
@@ -424,6 +424,54 @@ class LexiAprende {
 
                 // 5.  generar los botones de respuesta
                 this.generarOpcionesRespuesta(opcionesPosibles);
+        }
+        /**
+ * 🧠 Genera los botones de respuesta consultando el expediente de aprendizaje
+ */
+        async generarOpcionesRespuesta(bolsaFiltrada) {
+                const contenedor = document.getElementById('opciones-respuesta');
+                contenedor.innerHTML = ""; // Limpiamos botones anteriores
+
+                // 1. OBTENER LA RESPUESTA CORRECTA
+                const correcta = this.preguntaActual;
+
+                // 2. SELECCIONAR DISTRACTORES (Inteligencia de Datos)
+                // Filtramos para no repetir la correcta y buscamos distractores del mismo nivel r
+                let distractores = bolsaFiltrada.filter(item => item.id !== correcta.id);
+
+                // Mezclamos los distractores y cogemos los necesarios según this.numOpciones
+                this.mezclarArray(distractores);
+                const seleccionados = distractores.slice(0, this.numOpciones - 1);
+
+                // 3. LA MEZCLA FINAL (Correcta + Distractores)
+                const opcionesFinales = [correcta, ...seleccionados];
+                this.mezclarArray(opcionesFinales);
+
+                // 4. PINTAR BOTONES NEÓN
+                opcionesFinales.forEach(opcion => {
+                        const btn = document.createElement('button');
+                        btn.className = 'boton-opcion-examen-neon';
+                        btn.dataset.accion = 'comprobar-respuesta';
+                        btn.dataset.id = opcion.id;
+
+                        // Si idiomaInvertido es true, mostramos el idioma B; si no, el A
+                        btn.innerText = this.idiomaInvertido ? opcion.p[0] : opcion.p[1];
+
+                        contenedor.appendChild(btn);
+                });
+
+                // 5. DISPARAR EL RELOJ
+                this.iniciarTemporizador();
+        }
+
+        /**
+         * 🔀 Algoritmo de mezcla (Fisher-Yates) para que no haya patrones
+         */
+        mezclarArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [array[i], array[j]] = [array[j], array[i]];
+                }
         }
 
 
