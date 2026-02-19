@@ -25,17 +25,46 @@ class LexiAprende {
                         "nvl-3-pista": "EXPERTO"
                 };
 
-                this.listaCategoriasSeleccionadas = [];
-                // 📊 ESTADO INICIAL DEL JUEGO
-                this.nivelDificultadSeleccionado = "nvl-1"; // Empezamos en modo Semilla 🌱
-                this.vidas = 3;
-                this.comodines = 3;
-                this.puntos = 0;
-                this.racha = 0;
-                this.objetivoRacha = 5;
-                this.numOpciones = 2; // Empezamos con 4 botones
-                this.tiempoBase = 10; // Segundos para responder
 
+                //  VARIABLES DE ESTADO Y ACOPLAMIENTO
+                // -------------------------------------------------------------------------
+                // 1. nivelDificultadSeleccionado: [String] "nvl-1", "nvl-2", "nvl-3"
+                //    Modifica: gestionarDificultad() | Consume: evaluarRespuesta()
+                this.nivelDificultadSeleccionado = "nvl-1";
+
+                // 2. idiomaInvertido: [Boolean] Sentido de la pregunta
+                //    Modifica: Ruleta / Lógica nivel | Consume: evaluarRespuesta(), actualizarExpedientePalabra()
+                this.idiomaInvertido = false;
+
+                // 3. numOpciones: [Number] Cantidad de botones de respuesta
+                //    Modifica: gestionarRacha() / Ruleta | Consume: evaluarRespuesta(), generarOpcionesRespuesta()
+                this.numOpciones = 2;
+
+                // 4. modoTiempoCongelado: [Boolean] Flag de la Ruleta
+                //    Modifica: Ruleta (Premio) | Consume: evaluarRespuesta(), Temporizador
+                this.modoTiempoCongelado = false;
+
+                // 5. tiempoBase: [Number] Segundos máximos por pregunta
+                //    Modifica: gestionarRacha() (Dificultad) | Consume: evaluarRespuesta()
+                this.tiempoBase = 10;
+
+                // 6. preguntaActual: [Object] El item del JSON siendo evaluado
+                //    Modifica: siguientePregunta() | Consume: evaluarRespuesta(), comprobarRespuesta()
+                this.preguntaActual = null;
+
+                // 7. timestampInicioPregunta: [Number] Marca temporal del inicio
+                //    Modifica: generarOpcionesRespuesta() | Consume: comprobarRespuesta()
+                this.timestampInicioPregunta = 0;
+
+
+                // RECURSOS Y CONTADORES
+                this.comodines = 3;
+                this.vidasRestantes = 3;
+                this.indiceRachaActual = 0;
+                this.objetivoRacha = 5;
+                this.puntosTotales = 0;
+
+                this.listaTemasElegidos = [];
                 this.datos = null;    // para el léxico cargado 
                 this.db = null;       // Conexión a IndexedDB (para récords)
         }
@@ -185,7 +214,7 @@ class LexiAprende {
 
                 // 3. Generamos las filas de temas
                 let htmlFilas = "";
-                this.listaCategoriasSeleccionadas = [];
+                this.listaTemasElegidos = [];
                 catalogoTemas.forEach(tema => {
                         htmlFilas += `
                 <div class="boton-fila-seleccion-tema estado-seleccionado" 
@@ -194,7 +223,7 @@ class LexiAprende {
                     <span class="texto-nombre-categoria">${tema.titulo}</span>
                     <span class="icono-maestria-evolutiva">🌱</span>
                 </div>`;
-                        this.listaCategoriasSeleccionadas.push(tema.id);
+                        this.listaTemasElegidos.push(tema.id);
                 });
 
                 // 4. Inyectamos: Cabecera ANTES del listado, Filas DENTRO del listado
@@ -267,15 +296,15 @@ class LexiAprende {
                 // 2. Lógica de datos: ¿Añadir o Quitar de la lista de juego?
                 if (elemento.classList.contains('estado-seleccionado')) {
                         // Si no está ya, lo metemos
-                        if (!this.listaCategoriasSeleccionadas.includes(id)) {
-                                this.listaCategoriasSeleccionadas.push(id);
+                        if (!this.listaTemasElegidos.includes(id)) {
+                                this.listaTemasElegidos.push(id);
                         }
                 } else {
                         // Si lo desmarca, lo sacamos del array
-                        this.listaCategoriasSeleccionadas = this.listaCategoriasSeleccionadas.filter(item => item !== id);
+                        this.listaTemasElegidos = this.listaTemasElegidos.filter(item => item !== id);
                 }
 
-                console.log("Categorías activas:", this.listaCategoriasSeleccionadas);
+                console.log("Categorías activas:", this.listaTemasElegidos);
                 this.sincronizarBotonMasivo();
         }
 
@@ -306,12 +335,12 @@ class LexiAprende {
                         if (todosSeleccionados) {
                                 // DESACTIVAR TODO
                                 boton.classList.remove('estado-seleccionado');
-                                this.listaCategoriasSeleccionadas = [];
+                                this.listaTemasElegidos = [];
                         } else {
                                 // ACTIVAR TODO
                                 boton.classList.add('estado-seleccionado');
-                                if (!this.listaCategoriasSeleccionadas.includes(idTema)) {
-                                        this.listaCategoriasSeleccionadas.push(idTema);
+                                if (!this.listaTemasElegidos.includes(idTema)) {
+                                        this.listaTemasElegidos.push(idTema);
                                 }
                         }
                 });
@@ -319,7 +348,7 @@ class LexiAprende {
                 // Actualizamos el texto del botón usando el traductor
                 btnMasivo.innerText = todosSeleccionados ? this.t('btn-categorias-todas') : this.t('btn-categorias-ninguna');
 
-                console.log("Selección masiva:", this.listaCategoriasSeleccionadas);
+                console.log("Selección masiva:", this.listaTemasElegidos);
         }
 
 
@@ -327,13 +356,13 @@ class LexiAprende {
     * 🏁 Descarga los JSON de los temas elegidos y los fusiona
     */
         async prepararPartida() {
-                if (this.listaCategoriasSeleccionadas.length === 0) {
+                if (this.listaTemasElegidos.length === 0) {
                         alert(this.t('msg-error-seleccion'));
                         return;
                 }
 
                 try {
-                        const promesas = this.listaCategoriasSeleccionadas.map(id => {
+                        const promesas = this.listaTemasElegidos.map(id => {
                                 // ⚠️ Fíjate bien en la ruta: 'datos/id.json'
                                 return fetch(`datos/${id}.json`).then(res => {
                                         if (!res.ok) throw new Error(`No existe el archivo: datos/${id}.json`);
@@ -474,6 +503,97 @@ class LexiAprende {
                 }
         }
 
+        /**
+ *  SISTEMA DE EVALUACIÓN NUCLEAR
+ * Calcula el impacto de la respuesta en la maestría del usuario.
+ * Intervienen: Tiempo, Densidad de opciones, Sentido y Modos especiales.
+ */
+        async evaluarRespuesta(idSeleccionado, tiempoReaccion) {
+                const idObjetivo = this.preguntaActual.id;
+                const idAcepcion = this.acepcionActualIndex || "1";
+                const esExito = (idSeleccionado === idObjetivo);
+
+                // 1. CÁLCULO DEL PESO ESPECÍFICO (Multiplicadores)
+                // A mayor número de opciones, más mérito tiene el acierto
+                const multiplicadorOpciones = this.numOpciones / 2;
+
+                // El modo inverso (B->A) siempre es un 30% más valioso
+                const multiplicadorSentido = this.idiomaInvertido ? 1.3 : 1.0;
+
+                // 2. VALORACIÓN DEL TIEMPO (Eficiencia Cognitiva)
+                // Si el tiempo está congelado, la valoración de velocidad es neutra (1.0)
+                // Si no, premiamos responder en menos del 30% del tiempo disponible
+                let factorVelocidad = 1.0;
+                if (!this.modoTiempoCongelado) {
+                        const ratioTiempo = tiempoReaccion / (this.tiempoBase * 1000);
+                        factorVelocidad = ratioTiempo < 0.3 ? 1.5 : (ratioTiempo > 0.8 ? 0.7 : 1.0);
+                }
+
+                // 3. IMPACTO FINAL EN MAESTRÍA (Puntos de 0 a 100)
+                // Un acierto perfecto puede subir hasta 10 puntos. Un fallo resta 15.
+                const impactoMaestria = esExito
+                        ? (5 * multiplicadorOpciones * multiplicadorSentido * factorVelocidad)
+                        : -15;
+
+                // 4. REGISTRO EN BASE DE DATOS (Involucrados)
+                // Registramos la palabra objetivo (A)
+                await this.actualizarExpedientePalabra(idObjetivo, idAcepcion, esExito, tiempoReaccion, impactoMaestria);
+
+                // 🎯 ANALÍTICA DE CONFUSIÓN: Si falló, penalizamos levemente la palabra pulsada (B)
+                if (!esExito && idSeleccionado) {
+                        await this.actualizarExpedientePalabra(idSeleccionado, "1", false, 0, -5, idObjetivo);
+                }
+        }
+
+        /**
+         * PERSISTENCIA EN INDEXEDDB
+         * Gestiona la lectura/escritura de los expedientes individuales.
+         */
+        async actualizarExpedientePalabra(idPalabra, idAcep, exito, ms, deltaM, idConfundidaCon = null) {
+                const transaccion = this.db.transaction(["lexico"], "readwrite");
+                const almacen = transaccion.objectStore("lexico");
+
+                // Buscamos el registro actual o creamos la "Ficha Semilla"
+                const solicitud = almacen.get(idPalabra);
+
+                solicitud.onsuccess = () => {
+                        let reg = solicitud.result || {
+                                id: idPalabra,
+                                m: 0, // Maestría (0-100)
+                                s: {}, // Significados/Acepciones
+                                c: {}  // Confusiones { id_enemigo: cantidad }
+                        };
+
+                        // Aseguramos que la acepción existe en el registro
+                        if (!reg.s[idAcep]) {
+                                reg.s[idAcep] = {
+                                        d: { v: 0, a: 0, t: 0 }, // d: directo
+                                        i: { v: 0, a: 0, t: 0 }  // i: inverso
+                                };
+                        }
+
+                        const stats = this.idiomaInvertido ? reg.s[idAcep].i : reg.s[idAcep].d;
+
+                        // Actualizamos Vistas y Aciertos
+                        stats.v++;
+                        if (exito) stats.a++;
+
+                        // Actualizamos Tiempo Medio (Media Móvil Exponencial)
+                        if (exito && ms > 0) {
+                                stats.t = stats.t === 0 ? ms : Math.round((ms * 0.3) + (stats.t * 0.7));
+                        }
+
+                        // Actualizamos Maestría (Acotada entre 0 y 100)
+                        reg.m = Math.max(0, Math.min(100, reg.m + deltaM));
+
+                        // Si hay confusión, registramos el "enemigo"
+                        if (idConfundidaCon) {
+                                reg.c[idConfundidaCon] = (reg.c[idConfundidaCon] || 0) + 1;
+                        }
+
+                        almacen.put(reg);
+                };
+        }
 
 
 
