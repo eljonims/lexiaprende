@@ -486,8 +486,8 @@ class LexiAprende {
                 opcionesFinales.forEach(opcion => {
                         const btn = document.createElement('button');
                         btn.className = 'boton-opcion-examen-neon';
-                        btn.dataset.accion = 'comprobar-respuesta'; // 👈 VITAL PARA EL SWITCH
-                        btn.dataset.id = opcion.id;
+                        btn.dataset.accion = 'comprobar-respuesta'; 
+                        btn.dataset.id = String(opcion.id);
 
                         // Usamos la primera acepción por defecto de momento
                         btn.innerText = this.idiomaInvertido ? opcion.p[0] : opcion.p[1];
@@ -551,8 +551,8 @@ class LexiAprende {
                 // Si es timeout (null), el tiempo es el máximo (this.tiempoBase)
                 const tiempoReaccion = idSeleccionado ? (Date.now() - this.timestampInicioPregunta) : (this.tiempoBase * 1000);
 
-                const idObjetivo = this.preguntaActual.id;
-                const esExito = (idSeleccionado === idObjetivo);
+                const idObjetivo = String(this.preguntaActual.id);
+                const esExito = (String(idSeleccionado) === idObjetivo);
 
                 // Feedback visual: revelamos la correcta aunque no haya pulsado nada
                 const botones = document.querySelectorAll('.boton-opcion-examen-neon');

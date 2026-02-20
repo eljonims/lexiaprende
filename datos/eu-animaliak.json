@@ -1,7 +1,82 @@
 {
-  "config": { "id": "eu-animaliak", "titulo": "Animaliak" },
+  "config": {
+    "id": "eu-ani",
+    "titulo": "Animaliak / Animales"
+  },
   "vocabulario": [
-    { "p": ["txakur", "perro"], "r": 1 },
-    { "p": ["katu", "gato"], "r": 1 }
+    {
+      "id": "eu-ani-001",
+      "p": ["Txakurra", "img/txakurra.png", "audio/txakurra.mp3"],
+      "k": "perro",
+      "r": 1,
+      "e": ["d:bat", "t:mod", "u:com"],
+      "s": [
+        { "id": "1", "t": "Perro", "e": ["estandar"] }
+      ],
+      "sin": ["eu-ani-zakur"],
+      "ant": ["eu-ani-katua"]
+    },
+    {
+      "id": "eu-ani-zakur",
+      "p": ["Zakurra"],
+      "k": "perro",
+      "r": 2,
+      "e": ["d:gip", "r:col"],
+      "s": [
+        { "id": "1", "t": "Perro / Chucho", "e": ["coloquial"] }
+      ],
+      "sin": ["eu-ani-001"],
+      "ant": []
+    },
+    {
+      "id": "eu-ani-pinpilinpauxa",
+      "p": ["Pinpilinpauxa"],
+      "k": "mariposa",
+      "r": 1,
+      "e": ["d:gip", "u:com"],
+      "s": [
+        { "id": "1", "t": "Mariposa", "e": ["estandar"] }
+      ],
+      "sin": ["eu-ani-mitxeleta", "eu-ani-atxekaitz"],
+      "ant": []
+    },
+    {
+      "id": "eu-ani-mitxeleta",
+      "p": ["Mitxeleta"],
+      "k": "mariposa",
+      "r": 2,
+      "e": ["d:biz", "v:variante"],
+      "s": [
+        { "id": "1", "t": "Mariposa", "e": ["dialectal"] }
+      ],
+      "sin": ["eu-ani-pinpilinpauxa"],
+      "ant": []
+    },
+    {
+      "id": "eu-ani-oilar",
+      "p": ["Oilar"],
+      "k": "gallo",
+      "r": 1,
+      "e": ["d:bat"],
+      "s": [
+        { 
+          "id": "1", 
+          "t": "Gallo", 
+          "e": ["animal"] 
+        },
+        { 
+          "id": "2", 
+          "t": "Mancha de humedad", 
+          "e": ["coloquial", "vivienda"] 
+        },
+        { 
+          "id": "3", 
+          "t": "Gallo (voz)", 
+          "e": ["musica"] 
+        }
+      ],
+      "sin": [],
+      "ant": []
+    }
   ]
 }

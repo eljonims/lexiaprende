@@ -1,7 +1,43 @@
 {
-  "config": { "id": "eu-etxea", "titulo": "Etxea" },
+  "config": {
+    "id": "eu-etxea",
+    "titulo": "Etxea / La Casa"
+  },
   "vocabulario": [
-    { "p": ["horma", "pared"], "r": 1 },
-    { "p": ["ate", "puerta"], "r": 1 }
+    {
+      "id": "eu-etx-001",
+      "p": ["Etxea"],
+      "k": "casa",
+      "r": 1,
+      "e": ["d:bat", "t:mod", "u:com"],
+      "s": [
+        { 
+          "id": "1", 
+          "t": "Casa / Hogar", 
+          "e": ["estandar"] 
+        },
+        { 
+          "id": "2", 
+          "t": "Edificio", 
+          "e": ["arquitectura"] 
+        }
+      ],
+      "sin": ["eu-etx-bordea"],
+      "ant": ["eu-etx-kale"],
+      "n": "Palabra base del sistema"
+    },
+    {
+      "id": "eu-etx-bordea",
+      "p": ["Bordea"],
+      "k": "casa",
+      "r": 2,
+      "e": ["d:pir", "u:rur"],
+      "s": [
+        { "id": "1", "t": "Cabaña / Borda", "e": ["montaña"] }
+      ],
+      "sin": ["eu-etx-001"],
+      "ant": []
+    }
   ]
 }
+
