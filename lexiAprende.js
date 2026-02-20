@@ -492,6 +492,41 @@ class LexiAprende {
                 // 5. DISPARAR EL RELOJ
                 this.iniciarTemporizador();
         }
+        /**
+ * ⏱️ Controla la barra de tiempo visual y el "Timeout" de la pregunta
+ */
+        iniciarTemporizador() {
+                // 1. LIMPIEZA: Si había un reloj de la pregunta anterior, lo borramos
+                if (this.relojActivo) clearInterval(this.relojActivo);
+
+                // Si el tiempo está congelado (Ruleta), no iniciamos la cuenta atrás
+                if (this.modoTiempoCongelado) {
+                        document.getElementById('progreso-tiempo').style.width = "100%";
+                        return;
+                }
+
+                const barra = document.getElementById('progreso-tiempo');
+                const tiempoTotalMs = this.tiempoBase * 1000;
+                this.timestampInicioPregunta = Date.now();
+
+                // 2. EL BUCLE DEL RELOJ (Se ejecuta cada 100ms para que sea fluido)
+                this.relojActivo = setInterval(() => {
+                        const transcurrido = Date.now() - this.timestampInicioPregunta;
+                        const porcentaje = Math.max(0, 100 - (transcurrido / tiempoTotalMs * 100));
+
+                        // Actualizamos la barra neón
+                        if (barra) barra.style.width = `${porcentaje}%`;
+
+                        // ⚠️ CONTROL DE TIEMPO AGOTADO (TIMEOUT)
+                        if (transcurrido >= tiempoTotalMs) {
+                                clearInterval(this.relojActivo);
+                                console.log("⏰ ¡TIEMPO AGOTADO!");
+                                // Registramos fallo con ID nulo (no pulsó nada) y tiempo máximo
+                                this.comprobarRespuesta(null);
+                        }
+                }, 100);
+        }
+
 
         /**
          * 🔀 Algoritmo de mezcla (Fisher-Yates) para que no haya patrones
@@ -515,9 +550,10 @@ class LexiAprende {
 
                 // 1. CÁLCULO DEL PESO ESPECÍFICO (Multiplicadores)
                 // A mayor número de opciones, más mérito tiene el acierto
-                const multiplicadorOpciones = this.numOpciones / 2;
+                const multiplicadorOpciones = this.numOpciones / 2; // 1..4
 
                 // El modo inverso (B->A) siempre es un 30% más valioso
+                // producir es más difícil que reconocer
                 const multiplicadorSentido = this.idiomaInvertido ? 1.3 : 1.0;
 
                 // 2. VALORACIÓN DEL TIEMPO (Eficiencia Cognitiva)
