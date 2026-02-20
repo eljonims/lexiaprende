@@ -498,72 +498,72 @@ class LexiAprende {
         /**
  * ⏱️ Controla la barra visual con discriminación de colores (Verde > Amarillo > Rojo)
  */
-    /**
-     * ⏱️ Gestiona el tiempo y sincroniza la alerta con las vidas
-     */
+        /**
+         * ⏱️ Gestiona el tiempo y sincroniza la alerta con las vidas
+         */
         /**
      * ⏱️ Gestiona el tiempo y sincroniza la estética de alerta
      */
-    iniciarTemporizador() {
-        if (this.relojActivo) clearInterval(this.relojActivo);
-        
-        const barraInt = document.getElementById('progreso-tiempo');
-        const barraExt = document.querySelector('.barra-tiempo-exterior');
-        if (!barraInt || !barraExt) return;
+        iniciarTemporizador() {
+                if (this.relojActivo) clearInterval(this.relojActivo);
 
-        // Reset inicial de seguridad
-        barraInt.className = 'barra-tiempo-interior fase-verde';
-        barraExt.classList.remove('alerta-roja');
-        this.actualizarCorazonesVisual(null); // Corazones normales al empezar
+                const barraInt = document.getElementById('progreso-tiempo');
+                const barraExt = document.querySelector('.barra-tiempo-exterior');
+                if (!barraInt || !barraExt) return;
 
-        const tiempoTotalMs = this.tiempoBase * 1000;
-        this.timestampInicioPregunta = Date.now();
+                // Reset inicial de seguridad
+                barraInt.className = 'barra-tiempo-interior fase-verde';
+                barraExt.classList.remove('alerta-roja');
+                this.actualizarCorazonesVisual(null); // Corazones normales al empezar
 
-        this.relojActivo = setInterval(() => {
-            const transcurrido = Date.now() - this.timestampInicioPregunta;
-            const porcentaje = Math.max(0, 100 - (transcurrido / tiempoTotalMs * 100));
-            
-            // CAMBIO DE FASE SEGÚN RANGO
-            if (porcentaje <= 25) {
-                if (!barraInt.classList.contains('fase-rojo')) {
-                    barraInt.className = 'barra-tiempo-interior fase-rojo';
-                    barraExt.classList.add('alerta-roja');
-                    this.actualizarCorazonesVisual('rojo');
-                }
-            } else if (porcentaje <= 50) {
-                if (!barraInt.classList.contains('fase-amarillo')) {
-                    barraInt.className = 'barra-tiempo-interior fase-amarillo';
-                    this.actualizarCorazonesVisual('amarillo');
-                }
-            }
+                const tiempoTotalMs = this.tiempoBase * 1000;
+                this.timestampInicioPregunta = Date.now();
 
-            barraInt.style.width = `${porcentaje}%`;
+                this.relojActivo = setInterval(() => {
+                        const transcurrido = Date.now() - this.timestampInicioPregunta;
+                        const porcentaje = Math.max(0, 100 - (transcurrido / tiempoTotalMs * 100));
 
-            if (transcurrido >= tiempoTotalMs) {
-                clearInterval(this.relojActivo);
-                this.comprobarRespuesta(null); 
-            }
-        }, 100);
-    }
+                        // CAMBIO DE FASE SEGÚN RANGO
+                        if (porcentaje <= 25) {
+                                if (!barraInt.classList.contains('fase-rojo')) {
+                                        barraInt.className = 'barra-tiempo-interior fase-rojo';
+                                        barraExt.classList.add('alerta-roja');
+                                        this.actualizarCorazonesVisual('rojo');
+                                }
+                        } else if (porcentaje <= 50) {
+                                if (!barraInt.classList.contains('fase-amarillo')) {
+                                        barraInt.className = 'barra-tiempo-interior fase-amarillo';
+                                        this.actualizarCorazonesVisual('amarillo');
+                                }
+                        }
 
-    /**
-     * ❤️ Dibuja las vidas y aplica el latido al último corazón si hay alerta
-     */
-    actualizarCorazonesVisual(fase) {
-        const contenedor = document.getElementById('contenedor-vidas');
-        if (!contenedor) return;
+                        barraInt.style.width = `${porcentaje}%`;
 
-        let html = "";
-        for (let i = 0; i < this.vidasRestantes; i++) {
-            const esUltimo = (i === this.vidasRestantes - 1);
-            if (esUltimo && fase) {
-                html += `<span class="corazon-alerta-lenta ${fase}">❤️</span>`;
-            } else {
-                html += `<span>❤️</span>`;
-            }
+                        if (transcurrido >= tiempoTotalMs) {
+                                clearInterval(this.relojActivo);
+                                this.comprobarRespuesta(null);
+                        }
+                }, 100);
         }
-        contenedor.innerHTML = html;
-    }
+
+        /**
+         * ❤️ Dibuja las vidas y aplica el latido al último corazón si hay alerta
+         */
+        actualizarCorazonesVisual(fase) {
+                const contenedor = document.getElementById('contenedor-vidas');
+                if (!contenedor) return;
+
+                let html = "";
+                for (let i = 0; i < this.vidasRestantes; i++) {
+                        const esUltimo = (i === this.vidasRestantes - 1);
+                        if (esUltimo && fase) {
+                                html += `<span class="corazon-alerta-lenta ${fase}">❤️</span>`;
+                        } else {
+                                html += `<span>❤️</span>`;
+                        }
+                }
+                contenedor.innerHTML = html;
+        }
 
 
 
@@ -669,6 +669,51 @@ class LexiAprende {
 
                         almacen.put(reg);
                 };
+        }
+        /**
+         * 🌟 GESTIÓN DE ACIERTO
+         * Suma puntos, sube la racha y comprueba si toca Ruleta
+         */
+        gestionarAcierto(ms) {
+                // 1. Sumamos puntos (Fórmula simple de momento)
+                const puntosGanados = Math.round((this.numOpciones * 10) + (10000 / ms));
+                this.puntosTotales += puntosGanados;
+
+                // 2. Subimos la racha
+                this.indiceRachaActual++;
+
+                console.log(`✅ ACIERTO: Racha ${this.indiceRachaActual} | Puntos +${puntosGanados}`);
+
+                // 3. ¿Hemos llegado al objetivo de la Ruleta (5)?
+                if (this.indiceRachaActual >= this.objetivoRacha) {
+                        this.lanzarRuleta();
+                } else {
+                        // Si no hay ruleta, siguiente pregunta tras pequeña pausa
+                        setTimeout(() => this.siguientePregunta(), 600);
+                }
+                document.getElementById('marcador-racha').innerText = `${this.indiceRachaActual}/${this.objetivoRacha}`;
+        }
+
+        /**
+         * 💔 GESTIÓN DE FALLO
+         * Resta vida, resetea racha y comprueba Game Over
+         */
+        gestionarFallo(idSeleccionado) {
+                this.vidasRestantes--;
+                this.indiceRachaActual = 0; // La racha se rompe cruelmente
+
+                console.log(`❌ FALLO: Vidas restantes ${this.vidasRestantes}`);
+
+                // Actualizamos visualmente los corazones (quitamos el que latía)
+                this.actualizarCorazonesVisual(null);
+
+                if (this.vidasRestantes <= 0) {
+                        this.finalizarExamen();
+                } else {
+                        // Pausa un poco más larga para que el usuario asimile el error
+                        setTimeout(() => this.siguientePregunta(), 1200);
+                }
+                document.getElementById('marcador-racha').innerText = `${this.indiceRachaActual}/${this.objetivoRacha}`;
         }
 
 
