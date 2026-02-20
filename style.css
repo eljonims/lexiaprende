@@ -340,3 +340,75 @@ body {
     gap: 15px;
     padding: 10px 0;
 }
+
+/* --- ANIMACIONES SENSORIALES --- */
+
+/* Latido para corazones y avisos */
+@keyframes latido-corazon {
+    0% { transform: scale(1); filter: brightness(1); }
+    50% { transform: scale(1.6); filter: brightness(1.5); }
+    100% { transform: scale(1); filter: brightness(1); }
+}
+
+/* Agitación de toda la estructura (Shake) */
+@keyframes agitacion-total {
+    0% { transform: translate(0, 0); }
+    25% { transform: translate(-2px, 0px); }
+    50% { transform: translate(2px, -1px); }
+    75% { transform: translate(-2px, -1px); }
+    100% { transform: translate(2px, 0px); }
+}
+
+/* --- ANIMACIONES DE TENSIÓN CINEMATOGRÁFICA --- */
+
+/* Latido lento y profundo (Sincronizado para barra y corazón) */
+@keyframes latido-lento {
+    0% { transform: scale(1); filter: brightness(.4); }
+    50% { transform: scale(1.5); filter: brightness(1.3); }
+    100% { transform: scale(1); filter: brightness(.4); }
+}
+
+/* Vaivén sutil de arriba a abajo (Para la barra exterior) */
+@keyframes vaiven-sutil {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(2px); }
+    100% { transform: translateY(0); }
+}
+
+/* --- ESTILOS DE FASE ACTUALIZADOS --- */
+
+/* Barra Verde: Fluida y sin efectos */
+.barra-tiempo-interior.fase-verde { 
+    background: #00ff88; 
+    box-shadow: 0 0 10px #00ff88;
+    transition: width 0.1s linear; 
+}
+
+/* Barra Amarilla: Latido lento */
+.barra-tiempo-interior.fase-amarillo { 
+    background: #ffcc00; 
+    box-shadow: 0 0 15px #ffcc00;
+    animation: width 0.1s linear;
+}
+
+/* Barra Roja: Mismo latido lento, cambia el color */
+.barra-tiempo-interior.fase-rojo { 
+    background: #ff4400; 
+    box-shadow: 0 0 15px #ff4400;
+    animation: vaiven-sutil 0.3s infinite ease-in-out;
+}
+
+/* Contenedor Exterior: Oscilación sutil en rojo */
+.barra-tiempo-exterior.alerta-roja {
+    animation: vaiven-sutil 0.3s infinite ease-in-out;
+    /*border: 1px solid rgba(255, 68, 0, 0.3);*/
+}
+
+/* Corazón en alerta: Latido lento sincronizado */
+.corazon-alerta-lenta {
+    display: inline-block;
+    
+}
+.corazon-alerta-lenta.amarillo { color: #ffcc00; }
+.corazon-alerta-lenta.rojo { color: #ff4400; animation: latido-lento 1s infinite ease-in-out; }
+

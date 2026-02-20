@@ -495,37 +495,77 @@ class LexiAprende {
         /**
  * ⏱️ Controla la barra de tiempo visual y el "Timeout" de la pregunta
  */
-        iniciarTemporizador() {
-                // 1. LIMPIEZA: Si había un reloj de la pregunta anterior, lo borramos
-                if (this.relojActivo) clearInterval(this.relojActivo);
+        /**
+ * ⏱️ Controla la barra visual con discriminación de colores (Verde > Amarillo > Rojo)
+ */
+    /**
+     * ⏱️ Gestiona el tiempo y sincroniza la alerta con las vidas
+     */
+        /**
+     * ⏱️ Gestiona el tiempo y sincroniza la estética de alerta
+     */
+    iniciarTemporizador() {
+        if (this.relojActivo) clearInterval(this.relojActivo);
+        
+        const barraInt = document.getElementById('progreso-tiempo');
+        const barraExt = document.querySelector('.barra-tiempo-exterior');
+        if (!barraInt || !barraExt) return;
 
-                // Si el tiempo está congelado (Ruleta), no iniciamos la cuenta atrás
-                if (this.modoTiempoCongelado) {
-                        document.getElementById('progreso-tiempo').style.width = "100%";
-                        return;
+        // Reset inicial de seguridad
+        barraInt.className = 'barra-tiempo-interior fase-verde';
+        barraExt.classList.remove('alerta-roja');
+        this.actualizarCorazonesVisual(null); // Corazones normales al empezar
+
+        const tiempoTotalMs = this.tiempoBase * 1000;
+        this.timestampInicioPregunta = Date.now();
+
+        this.relojActivo = setInterval(() => {
+            const transcurrido = Date.now() - this.timestampInicioPregunta;
+            const porcentaje = Math.max(0, 100 - (transcurrido / tiempoTotalMs * 100));
+            
+            // CAMBIO DE FASE SEGÚN RANGO
+            if (porcentaje <= 25) {
+                if (!barraInt.classList.contains('fase-rojo')) {
+                    barraInt.className = 'barra-tiempo-interior fase-rojo';
+                    barraExt.classList.add('alerta-roja');
+                    this.actualizarCorazonesVisual('rojo');
                 }
+            } else if (porcentaje <= 50) {
+                if (!barraInt.classList.contains('fase-amarillo')) {
+                    barraInt.className = 'barra-tiempo-interior fase-amarillo';
+                    this.actualizarCorazonesVisual('amarillo');
+                }
+            }
 
-                const barra = document.getElementById('progreso-tiempo');
-                const tiempoTotalMs = this.tiempoBase * 1000;
-                this.timestampInicioPregunta = Date.now();
+            barraInt.style.width = `${porcentaje}%`;
 
-                // 2. EL BUCLE DEL RELOJ (Se ejecuta cada 100ms para que sea fluido)
-                this.relojActivo = setInterval(() => {
-                        const transcurrido = Date.now() - this.timestampInicioPregunta;
-                        const porcentaje = Math.max(0, 100 - (transcurrido / tiempoTotalMs * 100));
+            if (transcurrido >= tiempoTotalMs) {
+                clearInterval(this.relojActivo);
+                this.comprobarRespuesta(null); 
+            }
+        }, 100);
+    }
 
-                        // Actualizamos la barra neón
-                        if (barra) barra.style.width = `${porcentaje}%`;
+    /**
+     * ❤️ Dibuja las vidas y aplica el latido al último corazón si hay alerta
+     */
+    actualizarCorazonesVisual(fase) {
+        const contenedor = document.getElementById('contenedor-vidas');
+        if (!contenedor) return;
 
-                        // ⚠️ CONTROL DE TIEMPO AGOTADO (TIMEOUT)
-                        if (transcurrido >= tiempoTotalMs) {
-                                clearInterval(this.relojActivo);
-                                console.log("⏰ ¡TIEMPO AGOTADO!");
-                                // Registramos fallo con ID nulo (no pulsó nada) y tiempo máximo
-                                this.comprobarRespuesta(null);
-                        }
-                }, 100);
+        let html = "";
+        for (let i = 0; i < this.vidasRestantes; i++) {
+            const esUltimo = (i === this.vidasRestantes - 1);
+            if (esUltimo && fase) {
+                html += `<span class="corazon-alerta-lenta ${fase}">❤️</span>`;
+            } else {
+                html += `<span>❤️</span>`;
+            }
         }
+        contenedor.innerHTML = html;
+    }
+
+
 
 
         /**
