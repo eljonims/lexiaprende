@@ -269,8 +269,8 @@ class LexiAprende {
                                 case 'volver-menu':
                                         this.volverAlMenuPrincipal();
                                         break;
-                                case 'frenar-ruleta': 
-                                        this.frenarRuleta(); 
+                                case 'frenar-ruleta':
+                                        this.frenarRuleta();
                                         break;
 
                         }
@@ -868,7 +868,6 @@ class LexiAprende {
         lanzarRuleta() {
                 if (this.relojActivo) clearInterval(this.relojActivo);
 
-                // 1. Definimos la bolsa de premios (Premios y Castigos)
                 this.listaPremios = [
                         { id: 'bizia', t: '❤️ BIZIA (+1)', c: '#00ff88' },
                         { id: 'izoztuta', t: '❄️ IZOZTUTA', c: '#00ccff' },
@@ -877,11 +876,10 @@ class LexiAprende {
                         { id: 'laster', t: '⚡ LASTER', c: '#ffff00' }
                 ];
 
-                // 2. Pintamos la interfaz (Simplificado para el taller)
                 const zonaJuego = document.getElementById('tablero-juego');
+                // Clonamos la lista varias veces para el efecto visual de giro
                 let htmlPremios = "";
-                // Repetimos la lista 10 veces para que parezca infinita al girar
-                for (let i = 0; i < 50; i++) {
+                for (let i = 0; i < 30; i++) {
                         const p = this.listaPremios[i % this.listaPremios.length];
                         htmlPremios += `<div class="item-premio ${p.m ? 'maldito' : ''}">${p.t}</div>`;
                 }
@@ -889,7 +887,7 @@ class LexiAprende {
                 zonaJuego.innerHTML = `
             <div class="capa-ruleta-sistema">
                 <div class="visor-ruleta">
-                    <div id="tira-premios" class="tira-premios">${htmlPremios}</div>
+                    <div id="tira-premios" class="tira-premios" style="transform: translateY(0px);">${htmlPremios}</div>
                 </div>
                 <button class="boton-disparador-juego-neon" id="btn-frenar-ruleta" data-accion="frenar-ruleta" style="margin-top: 40px">
                     GELDI! / ¡PARAR!
@@ -897,40 +895,45 @@ class LexiAprende {
             </div>
         `;
 
-                // 3. Iniciamos el giro automático (infinito)
-                this.posicionRuleta = 0;
+                this.posicionRuletaY = 0;
+                const tira = document.getElementById('tira-premios');
+
+                // GIRO RÁPIDO INICIAL (Sin transición para que no de tirones)
                 this.idGiroRuleta = setInterval(() => {
-                        this.posicionRuleta += 120; // Tamaño del item
-                        const tira = document.getElementById('tira-premios');
-                        if (tira) tira.style.transform = `translateY(-${this.posicionRuleta % (120 * 50)}px)`;
-                }, 100);
+                        this.posicionRuletaY -= 40; // Velocidad de giro
+                        // Si subimos demasiado, reseteamos al inicio del ciclo visual
+                        if (Math.abs(this.posicionRuletaY) >= (this.listaPremios.length * 120 * 2)) {
+                                this.posicionRuletaY = 0;
+                        }
+                        tira.style.transform = `translateY(${this.posicionRuletaY}px)`;
+                }, 30);
         }
 
-        /**
-         * 🛑 FRENAR RULETA: Inercia calculada por el usuario
-         */
+
         frenarRuleta() {
                 clearInterval(this.idGiroRuleta);
                 const tira = document.getElementById('tira-premios');
                 const btn = document.getElementById('btn-frenar-ruleta');
-                if (btn) btn.disabled = true;
+                if (btn) btn.style.display = 'none';
 
-                // Inercia: 2 a 5 posiciones extra tras el clic
-                const inerciaExtra = Math.floor(Math.random() * 3) + 2;
-                const finalY = this.posicionRuleta + (inerciaExtra * 120);
+                // 1. Calculamos inercia (Avanza entre 5 y 8 posiciones más para realismo)
+                const itemsExtra = Math.floor(Math.random() * 4) + 5;
+                const destinoFinalY = this.posicionRuletaY - (itemsExtra * 120);
 
-                tira.style.transition = "transform 2s cubic-bezier(0.1, 0.8, 0.1, 1)";
-                tira.style.transform = `translateY(-${finalY}px)`;
+                // 2. Aplicamos la animación de frenado profesional
+                tira.style.transition = "transform 2.5s cubic-bezier(0.1, 0.9, 0.2, 1)";
+                tira.style.transform = `translateY(${destinoFinalY}px)`;
 
-                // Detectar premio final (módulo del total de premios)
-                const indiceFinal = Math.round((finalY / 120) % this.listaPremios.length);
-                const premio = this.listaPremios[indiceFinal];
+                // 3. Cálculo del premio basado en la posición final real
+                // El Math.abs nos da la distancia total, dividimos por altura y usamos el módulo
+                const indiceReal = Math.round(Math.abs(destinoFinalY) / 120) % this.listaPremios.length;
+                const premio = this.listaPremios[indiceReal];
 
                 setTimeout(() => {
-                        alert(`Saria: ${premio.t}`); // Temporal hasta programar los efectos
                         this.aplicarPremio(premio);
-                }, 2100);
+                }, 2600);
         }
+
 
 
 
