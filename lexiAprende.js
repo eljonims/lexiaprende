@@ -24,6 +24,12 @@ class LexiAprende {
                         "nvl-2-pista": "MEDIO",
                         "nvl-3-pista": "EXPERTO"
                 };
+                this.tablaMutacionesInfernua = {
+                        "a": ["e", "o"], "e": ["a", "i"], "i": ["e", "u"], "o": ["a", "u"], "u": ["i", "o"],
+                        "s": ["z", "x"], "z": ["s", "x"], "x": ["s", "z"],
+                        "ts": ["tz", "tx"], "tz": ["ts", "tx"], "tx": ["ts", "tz"],
+                        "rr": ["r"], "r": ["rr"]
+                };
 
 
                 //  VARIABLES DE ESTADO Y ACOPLAMIENTO
@@ -32,9 +38,8 @@ class LexiAprende {
                 //    Modifica: gestionarDificultad() | Consume: evaluarRespuesta()
                 this.nivelDificultadSeleccionado = "nvl-1";
 
-                // 2. idiomaInvertido: [Boolean] Sentido de la pregunta
-                //    Modifica: Ruleta / Lógica nivel | Consume: evaluarRespuesta(), actualizarExpedientePalabra()
-                this.idiomaInvertido = false;
+
+
 
                 // 3. numOpciones: [Number] Cantidad de botones de respuesta
                 //    Modifica: gestionarRacha() / Ruleta | Consume: evaluarRespuesta(), generarOpcionesRespuesta()
@@ -67,6 +72,12 @@ class LexiAprende {
                 this.listaTemasElegidos = [];
                 this.datos = null;    // para el léxico cargado 
                 this.db = null;       // Conexión a IndexedDB (para récords)
+
+
+                this.modoInfernuaActivo = false;
+                this.modoTiempoCongelado = false;
+                this.modoMareoActivo = false;
+                this.idiomaInvertido = false;
         }
         // El mensajero de la bitácora
         bitacora(msj, pct) {//mensaje y porcentaje (0-100) de la barra
@@ -439,8 +450,13 @@ class LexiAprende {
         }
 
         siguientePregunta() {
+                if (this.modoMareoActivo) {
+                        this.idiomaInvertido = Math.random() > 0.5;
+                        console.log("MAREA: Sentido de la pregunta invertido:", this.idiomaInvertido);
+                }
                 // 1. Mapeamos tu nivel a número de rareza 'r'
                 const rarezaMaxima = parseInt(this.nivelDificultadSeleccionado.split('-')[1]);
+
 
                 // 2. Filtramos la "bolsa" para quedarnos solo con lo que toca
                 const opcionesPosibles = this.datosCargados.filter(item => item.r <= rarezaMaxima);
@@ -464,44 +480,87 @@ class LexiAprende {
                 // 5.  generar los botones de respuesta
                 this.generarOpcionesRespuesta(opcionesPosibles);
         }
-        /**
- * 🧠 Genera los botones de respuesta consultando el expediente de aprendizaje
- */
         async generarOpcionesRespuesta(bolsaFiltrada) {
                 const contenedor = document.getElementById('opciones-respuesta');
                 if (!contenedor) return;
                 contenedor.innerHTML = "";
 
                 const correcta = this.preguntaActual;
+                let opcionesFinales = [];
 
-                // 1. Buscamos distractores en la bolsa que NO sean la correcta
-                let posiblesDistractores = bolsaFiltrada.filter(item => item.id !== correcta.id);
+                // 👹 BIFURCACIÓN: MODO INFERNUA (Castellano -> Euskera Mutado)
+                if (this.modoInfernuaActivo) {
+                        opcionesFinales.push(correcta);
 
-                // Mezclamos y tomamos los necesarios según this.numOpciones
-                this.mezclarArray(posiblesDistractores);
-                const seleccionados = posiblesDistractores.slice(0, this.numOpciones - 1);
+                        // 1. Obtenemos el texto base de la pregunta (p)
+                        const textoParaMutar = Array.isArray(correcta.p) ? correcta.p[0] : correcta.p;
 
-                // 2. Unimos y volvemos a mezclar para que la correcta no sea siempre la primera
-                const opcionesFinales = [correcta, ...seleccionados];
+                        // 2. Creamos 3 clones con el ADN completo de la palabra original
+                        for (let i = 0; i < 3; i++) {
+                                const mutada = this.generarSombraInfernua(textoParaMutar);
+                                opcionesFinales.push({
+                                        ...correcta, // 🧬 HEREDAMOS TODO EL OBJETO (id, s, k, r, e...)
+                                        id: `sombra-${i}-${Date.now()}`, // Pero le damos un ID único para el DOM
+                                        p: [mutada] // Sobrescribimos solo el texto con la mutación
+                                });
+                        }
+                }
+                else {
+                        // --- MODO NORMAL (Traducción Estándar) ---
+
+                        // A. PREGUNTA (El texto grande de arriba)
+                        // Si invertido es true: Preguntamos en Castellano (s.t)
+                        // Si invertido es false: Preguntamos en Euskera (p)
+                        const textoPregunta = this.idiomaInvertido ? correcta.s.t : correcta.p;
+                        document.getElementById('palabra-objetivo').innerText = textoPregunta;
+
+                        // B. RESPUESTAS (Los botones)
+                        let posiblesDistractores = bolsaFiltrada.filter(item => String(item.id) !== String(correcta.id));
+
+                        if (posiblesDistractores.length < (this.numOpciones - 1)) {
+                                posiblesDistractores = this.datosCargados.filter(item => String(item.id) !== String(correcta.id));
+                        }
+
+                        this.mezclarArray(posiblesDistractores);
+                        const seleccionados = posiblesDistractores.slice(0, this.numOpciones - 1);
+                        opcionesFinales = [correcta, ...seleccionados];
+                }
+
+
+                // --- 🔄 PINTADO FINAL DE BOTONES ---
                 this.mezclarArray(opcionesFinales);
 
-                // 3. Pintamos los botones con la data-accion necesaria
                 opcionesFinales.forEach(opcion => {
                         const btn = document.createElement('button');
                         btn.className = 'boton-opcion-examen-neon';
+
+                        // Si estamos en el Averno, aplicamos la clase de pánico visual
+                        if (this.modoInfernuaActivo) btn.classList.add('is-infierno-vibe');
+
                         btn.dataset.accion = 'comprobar-respuesta';
                         btn.dataset.id = String(opcion.id);
 
-                        // Usamos la primera acepción por defecto de momento
-                        btn.innerText = this.idiomaInvertido ? opcion.p[0] : opcion.p[1];
+                        // 🎯 ACCESO POSICIONAL:
+                        // Si idiomaInvertido es true (B->A): El botón muestra Euskera (p[0])
+                        // Si idiomaInvertido es false (A->B): El botón muestra Castellano (s.t)
+
+                        // En modo Infernua, como forzamos B->A, siempre entrará por opcion.p[0]
+                        if (this.idiomaInvertido || this.modoInfernuaActivo) {
+                                // Si p es un array, pillamos el índice 0. Si ya es un string, lo usamos tal cual.
+                                btn.innerText = Array.isArray(opcion.p) ? opcion.p[0] : opcion.p;
+                        } else {
+                                // En modo normal A->B, mostramos la traducción del sentido
+                                btn.innerText = opcion.s.t;
+                        }
 
                         contenedor.appendChild(btn);
                 });
 
-                // 4. Disparamos el reloj y grabamos el inicio
                 this.timestampInicioPregunta = Date.now();
                 this.iniciarTemporizador();
         }
+
+
 
 
         iniciarTemporizador() {
@@ -725,6 +784,7 @@ class LexiAprende {
         gestionarAcierto(ms) {
                 // 1. Sumamos puntos (Fórmula simple de momento)
                 const puntosGanados = Math.round((this.numOpciones * 10) + (10000 / ms));
+                if (this.tiempoBase === 5) puntosGanados *= 2;
                 this.puntosTotales += puntosGanados;
 
                 // 2. Subimos la racha
@@ -768,6 +828,13 @@ class LexiAprende {
          * 🏁 FINALIZAR EXAMEN: Resumen de la partida y retorno al menú
          */
         finalizarExamen() {
+                // limpieza ...
+                this.modoInfernuaActivo = false;
+                this.modoTiempoCongelado = false;
+                this.modoMareoActivo = false;
+                this.tiempoBase = 10;
+
+
                 if (this.relojActivo) clearInterval(this.relojActivo);
 
                 console.log("💀 GAME OVER. Procesando estadísticas finales...");
@@ -867,6 +934,9 @@ class LexiAprende {
  */
         lanzarRuleta() {
                 if (this.relojActivo) clearInterval(this.relojActivo);
+                this.modoInfernuaActivo = false;
+                this.modoTiempoCongelado = false;
+                this.idiomaInvertido = false;
 
                 this.listaPremios = [
                         { id: 'bizia', t: '❤️ BIZIA (+1)', c: '#00ff88' },
@@ -934,7 +1004,55 @@ class LexiAprende {
                 }, 2600);
         }
 
+        generarSombraInfernua(palabra) {
+                let mutada = palabra.toLowerCase();
+                const azar = Math.random();
 
+                // 1. LA H PILLINA: 40% de probabilidad de meter una H donde no va
+                if (azar > 0.6) {
+                        const pos = Math.floor(Math.random() * (mutada.length - 1)) + 1;
+                        mutada = mutada.slice(0, pos) + "h" + mutada.slice(pos);
+                }
+                // 2. BAILE DE VOCALES O SIBILANTES: 60% probabilidad
+                else {
+                        // Buscamos si la palabra tiene alguna letra "mutante"
+                        for (let letra in this.tablaMutacionesInfernua) {
+                                if (mutada.includes(letra)) {
+                                        const reemplazo = this.tablaMutacionesInfernua[letra][Math.floor(Math.random() * this.tablaMutacionesInfernua[letra].length)];
+                                        mutada = mutada.replace(letra, reemplazo);
+                                        break; // Solo una mutación por palabra para no hacerla ilegible
+                                }
+                        }
+                }
+                return mutada.charAt(0).toUpperCase() + mutada.slice(1); // Capitalizamos
+        }
+
+        aplicarPremio(premio) {
+                console.log(`🎁 APLICANDO PREMIO: ${premio.t}`);
+
+                // 1. Estados Booleanos (Se activan si el ID coincide, se apagan si no)
+                this.modoInfernuaActivo = (premio.id === 'infernua');
+                this.modoTiempoCongelado = (premio.id === 'izoztuta');
+                this.modoMareoActivo = (premio.id === 'marea');
+
+                // 2. Ajustes Numéricos (Tiempo y Vidas)
+                // Si es 'laster' (rápido), bajamos el tiempo base a 5s, si no, vuelve a 10s
+                this.tiempoBase = (premio.id === 'laster') ? 5 : 10;
+
+                // Si es 'bizia', sumamos una vida (esto es un incremento, no un estado)
+                if (premio.id === 'bizia') {
+                        this.vidasRestantes = Math.min(5, this.vidasRestantes + 1);
+                        this.actualizarCorazonesVisual(null);
+                }
+
+                // 3. Feedback visual y retorno al juego
+                setTimeout(() => {
+                        // Limpiamos la capa de la ruleta y volvemos al examen
+                        const capa = document.querySelector('.capa-ruleta-sistema');
+                        if (capa) capa.remove();
+                        this.siguientePregunta();
+                }, 2000);
+        }
 
 
 
