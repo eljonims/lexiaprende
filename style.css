@@ -412,3 +412,22 @@ body {
 .corazon-alerta-lenta.amarillo { color: #ffcc00; }
 .corazon-alerta-lenta.rojo { color: #ff4400; animation: latido-lento 1s infinite ease-in-out; }
 
+/* --- ESTADOS DE CORRECCIÓN POST-RESPUESTA --- */
+
+/* La que era correcta (brilla siempre en verde al terminar) */
+.boton-opcion-examen-neon.revelar-correcta {
+    border-color: #00ff88;
+    background: rgba(0, 255, 136, 0.2);
+    box-shadow: 0 0 20px #00ff88;
+    color: #fff;
+    transform: scale(1.05);
+    z-index: 10;
+}
+
+/* La que el usuario pulsó mal (rojo pálido) */
+.boton-opcion-examen-neon.revelar-error {
+    border-color: #ff4400;
+    background: rgba(255, 68, 0, 0.1);
+    box-shadow: 0 0 15px #ff4400;
+    opacity: 0.8;
+}

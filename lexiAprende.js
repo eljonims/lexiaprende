@@ -492,18 +492,7 @@ class LexiAprende {
                 // 5. DISPARAR EL RELOJ
                 this.iniciarTemporizador();
         }
-        /**
- * ⏱️ Controla la barra de tiempo visual y el "Timeout" de la pregunta
- */
-        /**
- * ⏱️ Controla la barra visual con discriminación de colores (Verde > Amarillo > Rojo)
- */
-        /**
-         * ⏱️ Gestiona el tiempo y sincroniza la alerta con las vidas
-         */
-        /**
-     * ⏱️ Gestiona el tiempo y sincroniza la estética de alerta
-     */
+
         iniciarTemporizador() {
                 if (this.relojActivo) clearInterval(this.relojActivo);
 
@@ -544,6 +533,38 @@ class LexiAprende {
                                 this.comprobarRespuesta(null);
                         }
                 }, 100);
+        }
+        /**
+         * ⚖️ Evalúa el clic y revela la solución visualmente
+         */
+        comprobarRespuesta(idSeleccionado) {
+                if (this.relojActivo) clearInterval(this.relojActivo);
+
+                const tiempoReaccion = Date.now() - this.timestampInicioPregunta;
+                const idObjetivo = this.preguntaActual.id;
+                const esExito = (idSeleccionado === idObjetivo);
+
+                // 🎯 REVELACIÓN VISUAL (Feedback inmediato)
+                const botones = document.querySelectorAll('.boton-opcion-examen-neon');
+                botones.forEach(btn => {
+                        // Desactivamos clics para que no pulse dos veces
+                        btn.style.pointerEvents = "none";
+
+                        if (btn.dataset.id === idObjetivo) {
+                                btn.classList.add('revelar-correcta');
+                        } else if (btn.dataset.id === idSeleccionado && !esExito) {
+                                btn.classList.add('revelar-error');
+                        }
+                });
+
+                // Registro en DB y gestión de estado
+                this.evaluarRespuesta(idSeleccionado, tiempoReaccion);
+
+                if (esExito) {
+                        this.gestionarAcierto(tiempoReaccion);
+                } else {
+                        this.gestionarFallo(idSeleccionado);
+                }
         }
 
         /**
