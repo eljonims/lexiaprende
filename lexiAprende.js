@@ -269,6 +269,9 @@ class LexiAprende {
                                 case 'volver-menu':
                                         this.volverAlMenuPrincipal();
                                         break;
+                                case 'frenar-ruleta': 
+                                        this.frenarRuleta(); 
+                                        break;
 
                         }
                 });
@@ -486,7 +489,7 @@ class LexiAprende {
                 opcionesFinales.forEach(opcion => {
                         const btn = document.createElement('button');
                         btn.className = 'boton-opcion-examen-neon';
-                        btn.dataset.accion = 'comprobar-respuesta'; 
+                        btn.dataset.accion = 'comprobar-respuesta';
                         btn.dataset.id = String(opcion.id);
 
                         // Usamos la primera acepción por defecto de momento
@@ -858,6 +861,77 @@ class LexiAprende {
                         }
                 };
         }
+
+        /**
+ * 🎡 LANZAR RULETA: Genera el visor y los premios
+ */
+        lanzarRuleta() {
+                if (this.relojActivo) clearInterval(this.relojActivo);
+
+                // 1. Definimos la bolsa de premios (Premios y Castigos)
+                this.listaPremios = [
+                        { id: 'bizia', t: '❤️ BIZIA (+1)', c: '#00ff88' },
+                        { id: 'izoztuta', t: '❄️ IZOZTUTA', c: '#00ccff' },
+                        { id: 'infernua', t: '🔥 INFERNUA', c: '#ff4400', m: true },
+                        { id: 'marea', t: '🌪️ MAREA', c: '#ff00cc' },
+                        { id: 'laster', t: '⚡ LASTER', c: '#ffff00' }
+                ];
+
+                // 2. Pintamos la interfaz (Simplificado para el taller)
+                const zonaJuego = document.getElementById('tablero-juego');
+                let htmlPremios = "";
+                // Repetimos la lista 10 veces para que parezca infinita al girar
+                for (let i = 0; i < 50; i++) {
+                        const p = this.listaPremios[i % this.listaPremios.length];
+                        htmlPremios += `<div class="item-premio ${p.m ? 'maldito' : ''}">${p.t}</div>`;
+                }
+
+                zonaJuego.innerHTML = `
+            <div class="capa-ruleta-sistema">
+                <div class="visor-ruleta">
+                    <div id="tira-premios" class="tira-premios">${htmlPremios}</div>
+                </div>
+                <button class="boton-disparador-juego-neon" id="btn-frenar-ruleta" data-accion="frenar-ruleta" style="margin-top: 40px">
+                    GELDI! / ¡PARAR!
+                </button>
+            </div>
+        `;
+
+                // 3. Iniciamos el giro automático (infinito)
+                this.posicionRuleta = 0;
+                this.idGiroRuleta = setInterval(() => {
+                        this.posicionRuleta += 120; // Tamaño del item
+                        const tira = document.getElementById('tira-premios');
+                        if (tira) tira.style.transform = `translateY(-${this.posicionRuleta % (120 * 50)}px)`;
+                }, 100);
+        }
+
+        /**
+         * 🛑 FRENAR RULETA: Inercia calculada por el usuario
+         */
+        frenarRuleta() {
+                clearInterval(this.idGiroRuleta);
+                const tira = document.getElementById('tira-premios');
+                const btn = document.getElementById('btn-frenar-ruleta');
+                if (btn) btn.disabled = true;
+
+                // Inercia: 2 a 5 posiciones extra tras el clic
+                const inerciaExtra = Math.floor(Math.random() * 3) + 2;
+                const finalY = this.posicionRuleta + (inerciaExtra * 120);
+
+                tira.style.transition = "transform 2s cubic-bezier(0.1, 0.8, 0.1, 1)";
+                tira.style.transform = `translateY(-${finalY}px)`;
+
+                // Detectar premio final (módulo del total de premios)
+                const indiceFinal = Math.round((finalY / 120) % this.listaPremios.length);
+                const premio = this.listaPremios[indiceFinal];
+
+                setTimeout(() => {
+                        alert(`Saria: ${premio.t}`); // Temporal hasta programar los efectos
+                        this.aplicarPremio(premio);
+                }, 2100);
+        }
+
 
 
 
