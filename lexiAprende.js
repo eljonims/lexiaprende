@@ -266,6 +266,10 @@ class LexiAprende {
                                 case 'comprobar-respuesta':
                                         this.comprobarRespuesta(id);
                                         break;
+                                case 'volver-menu':
+                                        this.volverAlMenuPrincipal();
+                                        break;
+
                         }
                 });
         }
@@ -638,7 +642,7 @@ class LexiAprende {
                 // 4. REGISTRO EN BASE DE DATOS (Involucrados)
                 // Registramos la palabra objetivo (A)
                 await this.actualizarExpedientePalabra(idObjetivo, idAcepcion, esExito, tiempoReaccion, impactoMaestria);
-                
+
                 // 5. LÓGICA DE PENALIZACIÓN EXTRA (Timeout con 2 opciones)
                 if (esTimeout && this.numOpciones === 2) {
                         // Buscamos cuál era la otra opción que estaba en pantalla
@@ -757,6 +761,59 @@ class LexiAprende {
                 document.getElementById('marcador-racha').innerText = `${this.indiceRachaActual}/${this.objetivoRacha}`;
         }
 
+        /**
+         * 🏁 FINALIZAR EXAMEN: Resumen de la partida y retorno al menú
+         */
+        finalizarExamen() {
+                if (this.relojActivo) clearInterval(this.relojActivo);
+
+                console.log("💀 GAME OVER. Procesando estadísticas finales...");
+
+                const zonaJuego = document.getElementById('tablero-juego');
+
+                // 1. Estructura de la pantalla de resultados
+                const htmlResultados = `
+            <div class="pantalla-resultados-neon">
+                <h1 class="titulo-game-over">${this.t('game-over-titulo') || 'FIN DEL EXAMEN'}</h1>
+                
+                <div class="dato-resultado">
+                    Puntos totales: <span class="valor-destacado">${this.puntosTotales}</span>
+                </div>
+                
+                <div class="dato-resultado">
+                    Máxima racha: <span class="valor-destacado">${this.rachaMaximaSesion || 0}</span>
+                </div>
+
+                <div class="lista-palabras-repaso">
+                    <p style="color: #666; font-size: 0.8rem">Palabras a reforzar:</p>
+                    <div id="contenedor-repaso-final"></div>
+                </div>
+
+                <button class="boton-lanzar-partida-neon" data-accion="volver-menu">
+                    ${this.t('btn-volver') || 'VOLVER AL MENÚ'}
+                </button>
+            </div>
+        `;
+
+                zonaJuego.innerHTML = htmlResultados;
+
+                // 2. Aquí podríamos pedir a IndexedDB las 3 palabras con más fallos de hoy
+                this.mostrarSugerenciasRepaso();
+        }
+
+        /**
+         * 🔄 Vuelve al estado inicial del menú de selección
+         */
+        volverAlMenuPrincipal() {
+                // Reseteamos variables de partida para la próxima
+                this.vidasRestantes = 3;
+                this.puntosTotales = 0;
+                this.indiceRachaActual = 0;
+                this.numOpciones = 2;
+
+                // Recargamos el menú (usando el catálogo que ya tenemos en memoria)
+                this.mostrarMenu(this.datosCatalogoCache);
+        }
 
 
 

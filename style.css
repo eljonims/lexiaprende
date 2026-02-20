@@ -431,3 +431,54 @@ body {
     box-shadow: 0 0 15px #ff4400;
     opacity: 0.8;
 }
+/* --- PANTALLA DE RESULTADOS (GAME OVER) --- */
+
+.pantalla-resultados-neon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.95);
+    border: 2px solid #ff4400;
+    box-shadow: 0 0 30px rgba(255, 68, 0, 0.3);
+    border-radius: 15px;
+    margin-top: 20px;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.titulo-game-over {
+    color: #ff4400;
+    font-size: 2.5rem;
+    text-shadow: 0 0 15px #ff4400;
+    margin-bottom: 10px;
+}
+
+.dato-resultado {
+    font-size: 1.2rem;
+    color: #fff;
+    margin: 10px 0;
+}
+
+.valor-destacado {
+    color: #00ffcc;
+    font-weight: bold;
+    font-family: 'Consolas', monospace;
+}
+
+.lista-palabras-repaso {
+    width: 100%;
+    margin: 20px 0;
+    padding: 10px;
+    background: #111;
+    border-radius: 8px;
+    text-align: left;
+}
+
+.item-repaso {
+    color: #ffaa00;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #222;
+    padding: 5px 0;
+}
