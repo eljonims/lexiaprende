@@ -815,6 +815,49 @@ class LexiAprende {
                 this.mostrarMenu(this.datosCatalogoCache);
         }
 
+        /**
+         * 🕵️ Analiza IndexedDB y muestra las 3 palabras que más se le han atragantado al usuario
+         */
+        async mostrarSugerenciasRepaso() {
+                const contenedor = document.getElementById('contenedor-repaso-final');
+                if (!contenedor || !this.db) return;
+
+                const transaccion = this.db.transaction(["lexico"], "readonly");
+                const almacen = transaccion.objectStore("lexico");
+                const todasLasPalabras = [];
+
+                // 1. Recogemos todas las palabras del expediente para compararlas
+                const peticion = almacen.openCursor();
+                peticion.onsuccess = (e) => {
+                        const cursor = e.target.result;
+                        if (cursor) {
+                                todasLasPalabras.push(cursor.value);
+                                cursor.continue();
+                        } else {
+                                // 2. Cuando tenemos todo, ordenamos por mayor número de fallos (directo o inverso)
+                                const sospechosas = todasLasPalabras
+                                        .filter(p => (p.d.v > 0 || p.i.v > 0)) // Solo palabras que ha visto
+                                        .sort((a, b) => {
+                                                const fallosA = (a.d.fallos || 0) + (a.i.fallos || 0);
+                                                const fallosB = (b.d.fallos || 0) + (b.i.fallos || 0);
+                                                return fallosB - fallosA; // De más fallos a menos
+                                        })
+                                        .slice(0, 3); // Nos quedamos con el "Top 3"
+
+                                // 3. Pintamos las sugerencias en el menú de Game Over
+                                if (sospechosas.length > 0) {
+                                        let html = "";
+                                        sospechosas.forEach(p => {
+                                                const fallos = (p.d.fallos || 0) + (p.i.fallos || 0);
+                                                html += `<div class="item-repaso">⚠️ <b>${p.id.split('-').pop().toUpperCase()}</b>: fallo ${fallos} veces</div>`;
+                                        });
+                                        contenedor.innerHTML = html;
+                                } else {
+                                        contenedor.innerHTML = "<div class='item-repaso'>✨ ¡Partida perfecta! Sin errores.</div>";
+                                }
+                        }
+                };
+        }
 
 
 
