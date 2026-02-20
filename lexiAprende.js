@@ -263,6 +263,9 @@ class LexiAprende {
                                 case 'cambiar-dificultad':
                                         this.gestionarDificultad(objetivo, id); // Aquí 'id' será el nivel (1, 2, 3)
                                         break;
+                                case 'comprobar-respuesta':
+                                        this.comprobarRespuesta(id);
+                                        break;
                         }
                 });
         }
@@ -459,39 +462,40 @@ class LexiAprende {
  */
         async generarOpcionesRespuesta(bolsaFiltrada) {
                 const contenedor = document.getElementById('opciones-respuesta');
-                contenedor.innerHTML = ""; // Limpiamos botones anteriores
+                if (!contenedor) return;
+                contenedor.innerHTML = "";
 
-                // 1. OBTENER LA RESPUESTA CORRECTA
                 const correcta = this.preguntaActual;
 
-                // 2. SELECCIONAR DISTRACTORES (Inteligencia de Datos)
-                // Filtramos para no repetir la correcta y buscamos distractores del mismo nivel r
-                let distractores = bolsaFiltrada.filter(item => item.id !== correcta.id);
+                // 1. Buscamos distractores en la bolsa que NO sean la correcta
+                let posiblesDistractores = bolsaFiltrada.filter(item => item.id !== correcta.id);
 
-                // Mezclamos los distractores y cogemos los necesarios según this.numOpciones
-                this.mezclarArray(distractores);
-                const seleccionados = distractores.slice(0, this.numOpciones - 1);
+                // Mezclamos y tomamos los necesarios según this.numOpciones
+                this.mezclarArray(posiblesDistractores);
+                const seleccionados = posiblesDistractores.slice(0, this.numOpciones - 1);
 
-                // 3. LA MEZCLA FINAL (Correcta + Distractores)
+                // 2. Unimos y volvemos a mezclar para que la correcta no sea siempre la primera
                 const opcionesFinales = [correcta, ...seleccionados];
                 this.mezclarArray(opcionesFinales);
 
-                // 4. PINTAR BOTONES NEÓN
+                // 3. Pintamos los botones con la data-accion necesaria
                 opcionesFinales.forEach(opcion => {
                         const btn = document.createElement('button');
                         btn.className = 'boton-opcion-examen-neon';
-                        btn.dataset.accion = 'comprobar-respuesta';
+                        btn.dataset.accion = 'comprobar-respuesta'; // 👈 VITAL PARA EL SWITCH
                         btn.dataset.id = opcion.id;
 
-                        // Si idiomaInvertido es true, mostramos el idioma B; si no, el A
+                        // Usamos la primera acepción por defecto de momento
                         btn.innerText = this.idiomaInvertido ? opcion.p[0] : opcion.p[1];
 
                         contenedor.appendChild(btn);
                 });
 
-                // 5. DISPARAR EL RELOJ
+                // 4. Disparamos el reloj y grabamos el inicio
+                this.timestampInicioPregunta = Date.now();
                 this.iniciarTemporizador();
         }
+
 
         iniciarTemporizador() {
                 if (this.relojActivo) clearInterval(this.relojActivo);
@@ -540,24 +544,21 @@ class LexiAprende {
         comprobarRespuesta(idSeleccionado) {
                 if (this.relojActivo) clearInterval(this.relojActivo);
 
-                const tiempoReaccion = Date.now() - this.timestampInicioPregunta;
+                // Si es timeout (null), el tiempo es el máximo (this.tiempoBase)
+                const tiempoReaccion = idSeleccionado ? (Date.now() - this.timestampInicioPregunta) : (this.tiempoBase * 1000);
+
                 const idObjetivo = this.preguntaActual.id;
                 const esExito = (idSeleccionado === idObjetivo);
 
-                // 🎯 REVELACIÓN VISUAL (Feedback inmediato)
+                // Feedback visual: revelamos la correcta aunque no haya pulsado nada
                 const botones = document.querySelectorAll('.boton-opcion-examen-neon');
                 botones.forEach(btn => {
-                        // Desactivamos clics para que no pulse dos veces
                         btn.style.pointerEvents = "none";
-
-                        if (btn.dataset.id === idObjetivo) {
-                                btn.classList.add('revelar-correcta');
-                        } else if (btn.dataset.id === idSeleccionado && !esExito) {
-                                btn.classList.add('revelar-error');
-                        }
+                        if (btn.dataset.id === idObjetivo) btn.classList.add('revelar-correcta');
+                        if (idSeleccionado && btn.dataset.id === idSeleccionado && !esExito) btn.classList.add('revelar-error');
                 });
 
-                // Registro en DB y gestión de estado
+                // Enviamos a evaluación: idObjetivo NUNCA es null, así que la BD no fallará
                 this.evaluarRespuesta(idSeleccionado, tiempoReaccion);
 
                 if (esExito) {
@@ -608,6 +609,8 @@ class LexiAprende {
                 const idObjetivo = this.preguntaActual.id;
                 const idAcepcion = this.acepcionActualIndex || "1";
                 const esExito = (idSeleccionado === idObjetivo);
+                const esTimeout = (idSeleccionado === null);
+
 
                 // 1. CÁLCULO DEL PESO ESPECÍFICO (Multiplicadores)
                 // A mayor número de opciones, más mérito tiene el acierto
@@ -635,6 +638,19 @@ class LexiAprende {
                 // 4. REGISTRO EN BASE DE DATOS (Involucrados)
                 // Registramos la palabra objetivo (A)
                 await this.actualizarExpedientePalabra(idObjetivo, idAcepcion, esExito, tiempoReaccion, impactoMaestria);
+                
+                // 5. LÓGICA DE PENALIZACIÓN EXTRA (Timeout con 2 opciones)
+                if (esTimeout && this.numOpciones === 2) {
+                        // Buscamos cuál era la otra opción que estaba en pantalla
+                        const botones = document.querySelectorAll('.boton-opcion-examen-neon');
+                        botones.forEach(btn => {
+                                const idOtra = btn.dataset.id;
+                                if (idOtra !== idObjetivo) {
+                                        console.log(`⚠️ Doble penalización por Timeout en 50/50: ${idOtra}`);
+                                        this.actualizarExpedientePalabra(idOtra, "1", false, 0, -10);
+                                }
+                        });
+                }
 
                 // 🎯 ANALÍTICA DE CONFUSIÓN: Si falló, penalizamos levemente la palabra pulsada (B)
                 if (!esExito && idSeleccionado) {
@@ -647,6 +663,10 @@ class LexiAprende {
          * Gestiona la lectura/escritura de los expedientes individuales.
          */
         async actualizarExpedientePalabra(idPalabra, idAcep, exito, ms, deltaM, idConfundidaCon = null) {
+
+                // Si no hay ID de palabra (porque fue un timeout y estamos evaluando la 'confusión'), salimos
+                if (!idPalabra) return; // evita registrar confusión de palabra con la nada
+
                 const transaccion = this.db.transaction(["lexico"], "readwrite");
                 const almacen = transaccion.objectStore("lexico");
 
